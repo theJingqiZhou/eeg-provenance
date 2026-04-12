@@ -82,7 +82,11 @@ The skill activates on: `EEG`, `MEG`, `electrophysiology`, `brain-computer inter
 
 ---
 
-## Installing via skills.sh
+## Installation
+
+```
+npx skills add https://github.com/Krish-mal15/ClaudeEEG
+```
 
 
 ```
