@@ -1,10 +1,16 @@
-# ClaudeEEG — SKILL.md
+---
+name: ClaudeEEG
+description: Expert EEG/MEG analysis, BCI development, and neuroscience signal processing — from raw recordings to production-grade models. Covers theory, preprocessing pipelines, ML/DL modeling, real-time classification, statistical analysis, and data ingestion.
+trigger: TRIGGER when the user's request involves EEG, MEG, electrophysiology, brain-computer interfaces, ICA, ERPs, epochs, artifact removal, EEGLAB, MNE-Python, braindecode, neural decoding, oscillations, frequency bands, power spectral density, source localization, motor imagery, P300, SSVEP, neurofeedback, or any brain-data analysis task.
+---
 
-### A Second Brain for Automated EEG Analysis: From Messy Data to Production-Grade Models
+# ClaudeEEG
+
+> A second brain for automated EEG analysis — from messy recordings to production-grade models.
 
 ---
 
-## 0. HOW TO USE THIS SKILL
+## Overview
 
 Load this skill whenever the user's request involves EEG data, neuroscience signal processing, BCI pipelines, or any brain-data analysis task. This document is structured as a _living reference_: read the relevant section(s) for each task and reason from first principles before generating code or recommendations. Always match the tool to the scientific question, not just user familiarity.
 
@@ -1815,10 +1821,6 @@ Latency: typically 500–800 ms end-to-end acceptable
 
 ---
 
-_ClaudeEEG SKILL.md — Last updated April 2026. Grounded in MNE-Python docs, EEGLAB tutorials, peer-reviewed literature (2020–2025), braindecode documentation, and NeuroPype documentation._
-
----
-
 ## 13. SIGNAL EVALUATION CHECKLISTS — WHAT CLAUDE SHOULD LOOK FOR
 
 This section is Claude's **perceptual and diagnostic checklist**: a structured set of features, red flags, and evaluation criteria to examine at every stage of EEG analysis. Use this when inspecting raw data, interpreting visualizations, auditing a user's pipeline, or deciding whether output is trustworthy. Go through the relevant subsection(s) before drawing conclusions or generating analysis code.
@@ -2764,10 +2766,6 @@ def build_multimodal_feature_matrix(
 |Check for duplicate trial IDs, missing triggers, or extra triggers|Merge behavioral and EEG trial counts and assume they match|
 |Store raw ingested data as MNE FIF or HDF5 before processing|Work from the original CSV/EDF every time (slow, fragile)|
 |Normalize units to µV (EEG) and SI units (external) at ingestion|Mix unit conventions across pipeline stages|
-
----
-
-_ClaudeEEG SKILL.md — Last updated April 2026. Grounded in MNE-Python docs, EEGLAB tutorials, peer-reviewed literature (2020–2025), braindecode documentation, NeuroPype documentation, and multimodal neuroscience data engineering practice._
 
 ---
 
@@ -3956,3 +3954,5 @@ def plot_learning_curve(pipeline, X, y, groups=None, title='Learning Curve'):
 ```
 
 ---
+
+_ClaudeEEG — Last updated April 2026. Grounded in MNE-Python docs, EEGLAB tutorials, peer-reviewed literature (2020–2025), braindecode documentation, NeuroPype documentation, and multimodal neuroscience data engineering practice._
