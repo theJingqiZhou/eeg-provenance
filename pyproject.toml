@@ -6,17 +6,28 @@ requires-python = ">=3.12,<3.13"
 dependencies = []
 
 [dependency-groups]
+adapters = [
+    "moabb==1.5.0",
+]
+braindecode = [
+    "braindecode==1.7.0",
+]
 eegdash = [
     "eegdash==0.8.4",
 ]
 validation = [
     "autoreject>=0.4.3,<0.5",
+    "bids-validator-deno==2.2.9",
     "jsonschema>=4.25,<5",
-    "mne==1.12.1",
+    "mne[hdf5]==1.12.1",
     "mne-bids==0.19.0",
     "mne-icalabel>=0.8,<0.9",
+    "openpyxl>=3.1,<4",
+    "pybids==0.22.0",
+    "pyedflib>=0.1.42,<0.2",
     "pytest>=8.4,<9",
     "pyyaml>=6.0,<7",
+    "scipy>=1.16,<2",
 ]
 
 [tool.pytest.ini_options]
@@ -24,7 +35,10 @@ addopts = "-ra"
 testpaths = ["tests"]
 pythonpath = [".", "skill/eeg-provenance"]
 markers = [
+    "adapters: tests requiring optional maintained dataset-adapter packages",
     "archive: read-only tests against an optional external EEG archive",
+    "braindecode: tests requiring the pinned Braindecode dependency group",
     "eegdash: tests requiring the pinned EEGDash dependency group",
     "network: tests requiring live external services",
+    "pyhealth: tests requiring an isolated PyHealth environment",
 ]
