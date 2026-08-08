@@ -1,0 +1,30 @@
+[project]
+name = "eeg-provenance-validation"
+version = "0.1.0"
+description = "Local validation environment for the eeg-provenance skill"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[dependency-groups]
+eegdash = [
+    "eegdash==0.8.4",
+]
+validation = [
+    "autoreject>=0.4.3,<0.5",
+    "jsonschema>=4.25,<5",
+    "mne==1.12.1",
+    "mne-bids==0.19.0",
+    "mne-icalabel>=0.8,<0.9",
+    "pytest>=8.4,<9",
+    "pyyaml>=6.0,<7",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "archive: read-only tests against an optional external EEG archive",
+    "eegdash: tests requiring the pinned EEGDash dependency group",
+    "network: tests requiring live external services",
+]
