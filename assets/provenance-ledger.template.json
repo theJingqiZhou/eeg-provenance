@@ -1,0 +1,148 @@
+{
+  "schema_version": "1.0.0",
+  "ledger_id": "eegprov-example-001",
+  "created_at": "2026-08-08T12:00:00Z",
+  "dataset": {
+    "dataset_id": "ds-example",
+    "dataset_version": "git:0123456789abcdef",
+    "bids_version": "1.11.1",
+    "source_root": "X:/archive/ds-example",
+    "source_uri": "https://example.org/datasets/ds-example",
+    "recordings": [
+      {
+        "id": "sub-001_task-example_run-1",
+        "relative_paths": ["sub-001/eeg/sub-001_task-example_run-1_eeg.set"],
+        "identities": [
+          {
+            "algorithm": "SHA256",
+            "value": "replace-with-source-sha256"
+          }
+        ]
+      }
+    ],
+    "acquisition_history": {
+      "status": "partial",
+      "evidence": ["dataset_description.json", "sub-001/eeg/sub-001_task-example_run-1_eeg.json"]
+    }
+  },
+  "objective": {
+    "analysis_goal": "Estimate an event-locked sensor-level response",
+    "endpoint": "Mean amplitude in a preregistered latency window",
+    "required_band_hz": [0.1, 30.0],
+    "timing_precision_s": 0.004,
+    "spatial_support": "Native intersection of named scalp EEG channels",
+    "generalization_unit": "participant"
+  },
+  "inputs": {
+    "entities": [
+      {
+        "id": "entity-raw-001",
+        "recording_id": "sub-001_task-example_run-1",
+        "shape": [64, 120000],
+        "sampling_frequency_hz": 500.0,
+        "units": "V",
+        "reference": "online reference documented in EEGReference"
+      }
+    ],
+    "channel_support": [
+      {
+        "name": "Cz",
+        "type": "EEG",
+        "state": "native",
+        "unit": "V",
+        "reference": "online reference documented in EEGReference",
+        "geometry_source": "sub-001/eeg/sub-001_electrodes.tsv"
+      }
+    ]
+  },
+  "contract": {
+    "evaluation_mode": "descriptive",
+    "split_policy": "Not predictive; all-data fitting is declared where used",
+    "invariants": [
+      "Preserve the raw source",
+      "Preserve event meaning and declared timing precision",
+      "Keep native and estimated channels distinguishable"
+    ],
+    "harmonization_decisions": [
+      {
+        "dimension": "units",
+        "classification": "must_harmonize",
+        "observed_state": "Physical units documented per channel",
+        "target_state": "V",
+        "decision": "Convert documented physical units to volts",
+        "rationale": "Amplitude comparisons require compatible physical units",
+        "information_loss": "None beyond floating-point rounding",
+        "alternatives": [],
+        "evidence_ids": ["S01"],
+        "validation": "Check scale against sidecar units and robust amplitude summaries"
+      },
+      {
+        "dimension": "montage",
+        "classification": "may_harmonize",
+        "observed_state": "Dataset-specific native channels",
+        "target_state": "Native channel intersection",
+        "decision": "Use the native intersection and do not interpolate",
+        "rationale": "The endpoint remains defined without modeled channels",
+        "information_loss": "Channels outside the intersection are excluded from cross-dataset summaries",
+        "alternatives": ["Target-montage interpolation with sensitivity analysis"],
+        "evidence_ids": ["S07", "S19"],
+        "validation": "Report retained native support per dataset"
+      }
+    ]
+  },
+  "activities": [
+    {
+      "id": "activity-intake-001",
+      "sequence": 1,
+      "type": "metadata_intake",
+      "adaptive": false,
+      "software": {
+        "name": "inspect_bids_metadata.py",
+        "version": "git:0123456789abcdef",
+        "command": "python scripts/inspect_bids_metadata.py X:/archive/ds-example"
+      },
+      "parameters": {
+        "signal_payload_read": false
+      },
+      "fit_scope": "none",
+      "input_entities": ["entity-raw-001"],
+      "output_entities": ["entity-intake-report-001"],
+      "channel_effect": "none",
+      "rank": null,
+      "shape_before": [64, 120000],
+      "shape_after": [64, 120000],
+      "sampling_frequency_hz_before": 500.0,
+      "sampling_frequency_hz_after": 500.0,
+      "reference_before": "online reference documented in EEGReference",
+      "reference_after": "online reference documented in EEGReference",
+      "evidence_ids": ["S01", "S03"]
+    }
+  ],
+  "qc": {
+    "retained_duration_fraction": 1.0,
+    "channel_state_transitions": [],
+    "event_count_before": 120,
+    "event_count_after": 120,
+    "notes": "Replace template values with executed diagnostics"
+  },
+  "outputs": [
+    {
+      "id": "output-intake-001",
+      "path": "C:/derivatives/ds-example/intake-report.json",
+      "media_type": "application/json",
+      "bytes": 0,
+      "checksum": "SHA256:replace-after-write",
+      "source_entity": "entity-raw-001",
+      "generating_activity": "activity-intake-001"
+    }
+  ],
+  "limitations": [
+    {
+      "issue": "Hardware filter model is not fully reported",
+      "affected_inference": "Frequencies near the acquisition passband edge may not be comparable",
+      "mitigation": "Restrict interpretation to the common documented passband and report uncertainty",
+      "severity": "moderate",
+      "evidence_ids": ["S01", "S03"]
+    }
+  ]
+}
