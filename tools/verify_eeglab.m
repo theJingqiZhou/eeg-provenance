@@ -7,13 +7,23 @@ arguments
 end
 
 originalPath = path;
-pathCleanup = onCleanup(@() path(originalPath)); %#ok<NASGU>
+pathCleanup = onCleanup(@() path(originalPath));
 addpath(char(eeglabRoot));
 [~, ~, ~, ~] = eeglab("nogui");
 
-requiredFunctions = ["pop_loadset", "pop_saveset", "eeg_checkset", "pop_importbids"];
+requiredFunctions = [ ...
+    "pop_loadset", "pop_saveset", "eeg_checkset", ...
+    "pop_importbids", "pop_exportbids", ...
+    "pop_eegfiltnew", "pop_reref", "pop_interp", ...
+    "pop_runica", "pop_iclabel", "pop_clean_rawdata", ...
+    "pop_dipfit_settings" ...
+];
+entryPoints = struct;
 for functionName = requiredFunctions
-    assert(~isempty(which(functionName)), "Missing required EEGLAB function: %s", functionName);
+    functionPath = string(which(functionName));
+    assert(strlength(functionPath) > 0, ...
+        "Missing required EEGLAB function: %s", functionName);
+    entryPoints.(functionName) = functionPath;
 end
 
 EEG = eeg_emptyset;
@@ -35,8 +45,8 @@ EEG = eeg_checkset(EEG);
 
 roundTripFolder = tempname;
 mkdir(roundTripFolder);
-folderCleanup = onCleanup(@() cleanupFolder(roundTripFolder)); %#ok<NASGU>
-EEG = pop_saveset(EEG, 'filename', 'synthetic.set', 'filepath', roundTripFolder, 'savemode', 'onefile');
+folderCleanup = onCleanup(@() cleanupFolder(roundTripFolder));
+pop_saveset(EEG, 'filename', 'synthetic.set', 'filepath', roundTripFolder, 'savemode', 'onefile');
 loaded = pop_loadset('filename', 'synthetic.set', 'filepath', roundTripFolder, 'loadmode', 'all');
 loaded = eeg_checkset(loaded);
 assert(isequal(size(loaded.data), [4, 512]), "Synthetic SET round trip changed data shape");
@@ -72,6 +82,7 @@ result.matlab_version = version;
 result.eeglab_version = eeg_getversion;
 result.eegbids_version = bids_matlab_tools_ver;
 result.eegbids_function = which("pop_importbids");
+result.entry_points = entryPoints;
 result.synthetic_shape = size(loaded.data);
 result.synthetic_srate = loaded.srate;
 result.archive = archive;

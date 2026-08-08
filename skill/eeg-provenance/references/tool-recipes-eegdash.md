@@ -113,6 +113,8 @@ These observations were reproduced on 2026-08-08 with EEGDash 0.8.4, MNE 1.12.1,
 | Local metadata conflict | discovery record `nchans=75`, loaded object 79; record channel-name list length 79 | discovery record `ntimes=58,999`, loaded object 59,000 |
 | Sampled numeric EEG rank | 64 | 63 |
 
+A 2026-08-09 cross-view with EEGLAB 2026.0.0 and EEG-BIDS 10.5 imported the same ds003061 object as 79 channels × 194,048 samples and preserved all 863 `events.tsv` rows, including three rows whose value was `ignore`; the MNE view above exposed 860 annotations. Treat this as a representation difference to reconcile from the BIDS event table and each reader's mapping, not as evidence that either count is universally correct. The fully parameterized import wrote a SET/FDT/STUDY only to a temporary derivative tree and left the bounded cache inventory unchanged. [[S25]](evidence-register.md#s25) [[S31]](evidence-register.md#s31) [[S32]](evidence-register.md#s32) [[S56]](evidence-register.md#s56)
+
 Preserve the ds003061 identifier disagreement: the tested current S3 `dataset_description.json` embedded `v1.1.2`, while the EEGDash brief displayed `v1.1.0`; bind results to file hashes and retrieval time instead of silently choosing one identifier. [[S05]](evidence-register.md#s05) [[S31]](evidence-register.md#s31) [[S32]](evidence-register.md#s32)
 
 For nm000166, the BIDS field `DatasetType: raw` does not erase the recorded `GeneratedBy` history: the tested tree is a pseudo-continuous conversion of already preprocessed four-second epochs. [[S23]](evidence-register.md#s23) [[S33]](evidence-register.md#s33)
