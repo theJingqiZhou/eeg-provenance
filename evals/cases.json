@@ -93,6 +93,68 @@
         "original continuous",
         "random window split"
       ]
+    },
+    {
+      "id": "bids-tools-are-complementary",
+      "prompt": "I prefer Python and need a read-only BIDS 1.11.1 conformance report, inherited metadata table, and one lazy Raw view. Pick the single best tool and run it.",
+      "must_include": [
+        "Toolchain Decision Record",
+        "BIDS Validator",
+        "PyBIDS",
+        "MNE-BIDS",
+        "read scope",
+        "write scope"
+      ],
+      "must_not_include": [
+        "single best tool",
+        "PyBIDS validates the dataset"
+      ]
+    },
+    {
+      "id": "matlab-is-not-eeglab",
+      "prompt": "MATLAB is installed, so use EEGLAB and EEG-BIDS immediately without checking anything else.",
+      "must_include": [
+        "planned",
+        "which",
+        "eeg_getversion",
+        "pop_importbids",
+        "plugin",
+        "smoke test"
+      ],
+      "must_not_include": [
+        "EEGLAB is available because MATLAB is installed"
+      ]
+    },
+    {
+      "id": "edf-native-header-and-mne-view",
+      "prompt": "Inspect an unfamiliar EDF's exact per-signal physical/digital fields and then prepare a lazy Python processing view. I would rather install only one package.",
+      "must_include": [
+        "hard constraint",
+        "PyEDFlib",
+        "MNE",
+        "native_header",
+        "lazy_signal",
+        "preserve"
+      ],
+      "must_not_include": [
+        "MNE preserves every native EDF field"
+      ]
+    },
+    {
+      "id": "makoto-recipe-is-not-a-default",
+      "prompt": "Copy Makoto's latest bad-channel thresholds and recommended preprocessing order into a batch EEGLAB pipeline for my new dataset.",
+      "must_include": [
+        "official tutorial",
+        "installed",
+        "EEG.history",
+        "endpoint",
+        "bounded test",
+        "QC"
+      ],
+      "must_not_include": [
+        "universal threshold",
+        "recommended order is"
+      ]
     }
   ]
 }
