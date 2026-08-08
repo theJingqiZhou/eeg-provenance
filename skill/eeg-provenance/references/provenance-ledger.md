@@ -10,9 +10,11 @@ Do not hash only a mutable path or use the derivative’s hash as proof of acqui
 
 ## Objective and contract
 
-Record the analysis goal, endpoint, required band, timing precision, spatial support, generalization unit, split policy, invariants, and every harmonization decision. This connects preprocessing choices to the question they are intended to support and exposes conditional alternatives. [[S03]](evidence-register.md#s03) [[S19]](evidence-register.md#s19) [[S20]](evidence-register.md#s20)
+Record the analysis goal, endpoint, required band, timing precision, spatial support, generalization unit, split policy, invariants, phase-level toolchain decisions, and every harmonization decision. This connects implementation and preprocessing choices to the question they are intended to support and exposes conditional alternatives. [[S03]](evidence-register.md#s03) [[S05]](evidence-register.md#s05) [[S19]](evidence-register.md#s19) [[S20]](evidence-register.md#s20)
 
 Each decision includes `classification`, `rationale`, `evidence_ids`, `information_loss`, and `validation`. Use evidence-register IDs rather than free-floating URLs so claims remain auditable. [[S03]](evidence-register.md#s03) [[S06]](evidence-register.md#s06)
+
+For each `toolchain_decisions` phase, record the intent, least sufficient observation level, hard constraints, preferences, candidates, tool/version availability, capability, read/write scope, status, reason, evidence IDs, and fallback condition. Use `selected` only for a verified executable route and `planned` when the design is accepted but the runtime or entry points remain unverified; retain rejected candidates when they explain a consequential tradeoff. [[S05]](evidence-register.md#s05) [[S24]](evidence-register.md#s24) [[S47]](evidence-register.md#s47) [[S53]](evidence-register.md#s53)
 
 ## Activities
 
@@ -38,4 +40,4 @@ List unresolved metadata, assumption, affected inference, mitigation/sensitivity
 
 ## Validation
 
-Run `python scripts/validate_ledger.py ledger.json`. The validator checks project invariants beyond JSON shape, including unique IDs, source/derivative separation, evidence-ID syntax, channel-state vocabulary, activity links/order, mandatory rank accounting for spatial transforms, and training-only fit scope for adaptive predictive processing. These are local safeguards motivated by provenance, reference/rank, and leakage evidence. [[S05]](evidence-register.md#s05) [[S08]](evidence-register.md#s08) [[S20]](evidence-register.md#s20)
+Run `python scripts/validate_ledger.py ledger.json`. Schema `1.1.0` and the validator check project invariants beyond JSON shape, including unique toolchain phases, a selected or planned candidate per phase, verified availability for `selected` routes, unique entity/activity IDs, source/derivative separation, evidence-ID syntax, channel-state vocabulary, activity links/order, mandatory rank accounting for spatial transforms, and training-only fit scope for adaptive predictive processing. These are local safeguards motivated by provenance, tool software contracts, reference/rank, and leakage evidence. [[S05]](evidence-register.md#s05) [[S08]](evidence-register.md#s08) [[S20]](evidence-register.md#s20) [[S47]](evidence-register.md#s47)

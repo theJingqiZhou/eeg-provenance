@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "ledger_id": "eegprov-example-001",
   "created_at": "2026-08-08T12:00:00Z",
   "dataset": {
@@ -62,6 +62,47 @@
       "Preserve the raw source",
       "Preserve event meaning and declared timing precision",
       "Keep native and estimated channels distinguishable"
+    ],
+    "toolchain_decisions": [
+      {
+        "phase": "bids_conformance",
+        "intent": "Assess BIDS 1.11.1 conformance and preserve a JSON issue report without changing the source",
+        "observation_level": "tree_and_sidecars",
+        "hard_constraints": [
+          "Source tree remains read-only",
+          "Use the official BIDS conformance implementation",
+          "Write reports outside source_root"
+        ],
+        "preferences": [
+          "Machine-readable output",
+          "Pinned schema and executable version"
+        ],
+        "candidates": [
+          {
+            "tool": "BIDS Validator",
+            "version": "2.2.9",
+            "availability": "verified",
+            "status": "selected",
+            "capability": "Validate the selected dataset against the pinned BIDS schema and emit JSON issues",
+            "read_scope": "Dataset tree, sidecars, and validator-required file headers",
+            "write_scope": "Standard output captured to a report outside source_root",
+            "reason": "It is the official conformance engine and satisfies the requested machine-readable report",
+            "evidence_ids": ["S47"]
+          },
+          {
+            "tool": "PyBIDS",
+            "version": "0.22.0",
+            "availability": "verified",
+            "status": "rejected",
+            "capability": "Index BIDS entities and resolve inherited metadata",
+            "read_scope": "Dataset paths and sidecars",
+            "write_scope": "No write with an in-memory index",
+            "reason": "Useful in the metadata-query phase but not a replacement for the official Validator",
+            "evidence_ids": ["S48"]
+          }
+        ],
+        "fallback_condition": "If the pinned executable is unavailable, install or run the documented official Deno release and record its version before validation"
+      }
     ],
     "harmonization_decisions": [
       {

@@ -18,7 +18,7 @@
     "limitations"
   ],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
+    "schema_version": {"const": "1.1.0"},
     "ledger_id": {"type": "string", "minLength": 1},
     "created_at": {"type": "string", "format": "date-time"},
     "dataset": {"$ref": "#/$defs/dataset"},
@@ -154,16 +154,63 @@
     "contract": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["evaluation_mode", "split_policy", "invariants", "harmonization_decisions"],
+      "required": ["evaluation_mode", "split_policy", "invariants", "toolchain_decisions", "harmonization_decisions"],
       "properties": {
         "evaluation_mode": {"enum": ["descriptive", "predictive"]},
         "split_policy": {"type": "string", "minLength": 1},
         "invariants": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "toolchain_decisions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/toolchainDecision"}
+        },
         "harmonization_decisions": {
           "type": "array",
           "minItems": 1,
           "items": {"$ref": "#/$defs/decision"}
         }
+      }
+    },
+    "toolchainDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["phase", "intent", "observation_level", "hard_constraints", "preferences", "candidates", "fallback_condition"],
+      "properties": {
+        "phase": {"type": "string", "minLength": 1},
+        "intent": {"type": "string", "minLength": 1},
+        "observation_level": {
+          "enum": ["catalogue", "tree_and_sidecars", "native_header", "lazy_signal", "bounded_samples", "full_execution"]
+        },
+        "hard_constraints": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "preferences": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "candidates": {
+          "type": "array",
+          "minItems": 1,
+          "contains": {
+            "type": "object",
+            "required": ["status"],
+            "properties": {"status": {"enum": ["selected", "planned"]}}
+          },
+          "minContains": 1,
+          "items": {"$ref": "#/$defs/toolCandidate"}
+        },
+        "fallback_condition": {"type": "string", "minLength": 1}
+      }
+    },
+    "toolCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "version", "availability", "status", "capability", "read_scope", "write_scope", "reason", "evidence_ids"],
+      "properties": {
+        "tool": {"type": "string", "minLength": 1},
+        "version": {"type": ["string", "null"]},
+        "availability": {"enum": ["verified", "unavailable", "unknown"]},
+        "status": {"enum": ["selected", "planned", "rejected", "fallback"]},
+        "capability": {"type": "string", "minLength": 1},
+        "read_scope": {"type": "string", "minLength": 1},
+        "write_scope": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "evidence_ids": {"$ref": "#/$defs/evidenceIds"}
       }
     },
     "decision": {

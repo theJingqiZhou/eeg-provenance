@@ -11,11 +11,21 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
 EVIDENCE_RE = re.compile(r"^S\d{2}$")
 EVIDENCE_ANCHOR_RE = re.compile(r'<a id="(s\d{2})"></a>', re.IGNORECASE)
 CHANNEL_STATES = {"native", "bad", "missing", "dropped", "interpolated", "virtual"}
 CLASSIFICATIONS = {"must_harmonize", "may_harmonize", "cannot_harmonize"}
+TOOL_STATUSES = {"selected", "planned", "rejected", "fallback"}
+TOOL_AVAILABILITY = {"verified", "unavailable", "unknown"}
+OBSERVATION_LEVELS = {
+    "catalogue",
+    "tree_and_sidecars",
+    "native_header",
+    "lazy_signal",
+    "bounded_samples",
+    "full_execution",
+}
 RANK_EFFECTS = {"drop", "interpolate", "rereference", "virtual"}
 TRAINING_SCOPES = {"training_only", "within_train_fold"}
 
@@ -160,10 +170,127 @@ def validate_ledger(data: Any) -> list[str]:
             errors.append(f"$.inputs.channel_support[{index}].state: invalid channel state")
 
     contract = _require_mapping(ledger.get("contract"), "$.contract", errors)
-    _required(contract, {"evaluation_mode", "split_policy", "invariants", "harmonization_decisions"}, "$.contract", errors)
+    _required(
+        contract,
+        {
+            "evaluation_mode",
+            "split_policy",
+            "invariants",
+            "toolchain_decisions",
+            "harmonization_decisions",
+        },
+        "$.contract",
+        errors,
+    )
     evaluation_mode = contract.get("evaluation_mode")
     if evaluation_mode not in {"descriptive", "predictive"}:
         errors.append("$.contract.evaluation_mode: expected descriptive or predictive")
+    toolchain_phases: set[str] = set()
+    toolchain_decisions = _require_list(
+        contract.get("toolchain_decisions"),
+        "$.contract.toolchain_decisions",
+        errors,
+    )
+    if not toolchain_decisions:
+        errors.append("$.contract.toolchain_decisions: at least one phase is required")
+    for index, value in enumerate(toolchain_decisions):
+        path = f"$.contract.toolchain_decisions[{index}]"
+        decision = _require_mapping(value, path, errors)
+        _required(
+            decision,
+            {
+                "phase",
+                "intent",
+                "observation_level",
+                "hard_constraints",
+                "preferences",
+                "candidates",
+                "fallback_condition",
+            },
+            path,
+            errors,
+        )
+        phase = decision.get("phase")
+        if not isinstance(phase, str) or not phase:
+            errors.append(f"{path}.phase: expected non-empty string")
+        elif phase.casefold() in toolchain_phases:
+            errors.append(f"{path}.phase: duplicate phase {phase!r}")
+        else:
+            toolchain_phases.add(phase.casefold())
+        if decision.get("observation_level") not in OBSERVATION_LEVELS:
+            errors.append(f"{path}.observation_level: invalid observation level")
+        if not _require_list(
+            decision.get("hard_constraints"), f"{path}.hard_constraints", errors
+        ):
+            errors.append(f"{path}.hard_constraints: at least one constraint is required")
+        _require_list(decision.get("preferences"), f"{path}.preferences", errors)
+        fallback = decision.get("fallback_condition")
+        if not isinstance(fallback, str) or not fallback:
+            errors.append(f"{path}.fallback_condition: expected non-empty string")
+
+        chosen = 0
+        candidate_tools: set[str] = set()
+        for candidate_index, candidate_value in enumerate(
+            _require_list(decision.get("candidates"), f"{path}.candidates", errors)
+        ):
+            candidate_path = f"{path}.candidates[{candidate_index}]"
+            candidate = _require_mapping(candidate_value, candidate_path, errors)
+            _required(
+                candidate,
+                {
+                    "tool",
+                    "version",
+                    "availability",
+                    "status",
+                    "capability",
+                    "read_scope",
+                    "write_scope",
+                    "reason",
+                    "evidence_ids",
+                },
+                candidate_path,
+                errors,
+            )
+            tool = candidate.get("tool")
+            if not isinstance(tool, str) or not tool:
+                errors.append(f"{candidate_path}.tool: expected non-empty string")
+            elif tool.casefold() in candidate_tools:
+                errors.append(f"{candidate_path}.tool: duplicate candidate {tool!r}")
+            else:
+                candidate_tools.add(tool.casefold())
+            status = candidate.get("status")
+            if status not in TOOL_STATUSES:
+                errors.append(f"{candidate_path}.status: invalid tool status")
+            elif status in {"selected", "planned"}:
+                chosen += 1
+                if candidate.get("availability") != "verified":
+                    if status == "selected":
+                        errors.append(
+                            f"{candidate_path}.availability: selected tool must be verified"
+                        )
+                    elif candidate.get("availability") == "unavailable":
+                        errors.append(
+                            f"{candidate_path}.availability: planned tool cannot be unavailable"
+                        )
+                if status == "selected" and (
+                    not isinstance(candidate.get("version"), str)
+                    or not candidate["version"].strip()
+                ):
+                    errors.append(
+                        f"{candidate_path}.version: selected tool requires a verified version"
+                    )
+            if candidate.get("availability") not in TOOL_AVAILABILITY:
+                errors.append(f"{candidate_path}.availability: invalid availability")
+            _check_evidence_ids(
+                candidate.get("evidence_ids"),
+                f"{candidate_path}.evidence_ids",
+                errors,
+                registered_evidence,
+            )
+        if chosen == 0:
+            errors.append(
+                f"{path}.candidates: at least one selected or planned tool is required"
+            )
     for index, value in enumerate(_require_list(contract.get("harmonization_decisions"), "$.contract.harmonization_decisions", errors)):
         decision = _require_mapping(value, f"$.contract.harmonization_decisions[{index}]", errors)
         if decision.get("classification") not in CLASSIFICATIONS:
