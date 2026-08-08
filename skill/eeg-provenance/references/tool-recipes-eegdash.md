@@ -1,6 +1,25 @@
 # EEGDash metadata, bounded acquisition, and QC
 
-Use EEGDash as an access layer, not as evidence that catalogue fields are correct or that one preprocessing pipeline fits every endpoint. Record the package version, exact query, returned record, source dataset identity, cache location, and any disagreement with the loaded object. [[S03]](evidence-register.md#s03) [[S31]](evidence-register.md#s31)
+Use EEGDash as a catalogue and access layer, not as the owner of OpenNeuro or NeMAR datasets and not as evidence that catalogue fields are correct or that one preprocessing pipeline fits every endpoint. Record the package version, exact query, returned record, provider accession, source dataset identity, cache location, and any disagreement with the loaded object. [[S03]](evidence-register.md#s03) [[S31]](evidence-register.md#s31) [[S51]](evidence-register.md#s51)
+
+## Contents
+
+- [Route the accession before selecting a tool](#route-the-accession-before-selecting-a-tool)
+- [Pinned environment](#pinned-environment)
+- [Metadata first](#metadata-first)
+- [One OpenNeuro recording](#one-openneuro-recording)
+- [One NeMAR recording](#one-nemar-recording)
+- [Offline QC](#offline-qc)
+- [Verified bounded exercise](#verified-bounded-exercise)
+- [Stop conditions](#stop-conditions)
+
+## Route the accession before selecting a tool
+
+Recognize `dsNNNNNN` as an OpenNeuro accession and `nmNNNNNN` or `onNNNNNN` as NeMAR accessions. Preserve the supplied string exactly; an `on*` prefix does not authorize guessing or substituting a `ds*` accession, even when the NeMAR record later supplies an OpenNeuro relation. [[S51]](evidence-register.md#s51)
+
+Query provider and EEGDash metadata first, compare version/snapshot, license, source URI, related identifiers, storage backend, and available download methods, then select transport. OpenNeuro can expose browser/S3 or EEGDash retrieval and provider-published Git/DataLad/git-annex routes; NeMAR dataset pages can expose NeMAR CLI, DataLad, git-annex, archive, or manifest/direct-file routes, while EEGDash support depends on the installed release and backend. [[S31]](evidence-register.md#s31) [[S37]](evidence-register.md#s37) [[S51]](evidence-register.md#s51)
+
+Do not construct a repository URL solely from the accession. Use the provider-published URL and pin the declared snapshot, tag, commit, or release before bounded retrieval. [[S05]](evidence-register.md#s05) [[S51]](evidence-register.md#s51)
 
 ## Pinned environment
 
@@ -25,7 +44,7 @@ The intake command requests at most two records so zero matches and ambiguous fi
 
 ## One OpenNeuro recording
 
-For an OpenNeuro-backed identifier, the script constructs the lazy dataset, verifies that the exact subject/task/session/run selectors resolve to one recording, and only then accesses `.raw`; EEGDash stores the BIDS-shaped result under `cache_dir/<dataset_id>`. [[S31]](evidence-register.md#s31)
+When EEGDash is selected for an OpenNeuro `ds*` accession, the script constructs the lazy dataset, verifies that the exact subject/task/session/run selectors resolve to one recording, and only then accesses `.raw`; EEGDash stores the BIDS-shaped result under `cache_dir/<dataset_id>`. [[S31]](evidence-register.md#s31)
 
 ```bash
 uv run python scripts/eegdash_intake.py \
@@ -33,11 +52,18 @@ uv run python scripts/eegdash_intake.py \
   --cache-dir .workbench/eegdash-cache --download-one
 ```
 
-Never set the cache to a source archive, and pass every known source tree through `--protected-source`; this repository additionally refuses Windows `X:` and WSL `/mnt/x` cache paths as a local safeguard. [[S23]](evidence-register.md#s23) [[S31]](evidence-register.md#s31)
+Never set the cache to a source archive, and pass every known source tree through `--protected-source`. Path names, drive letters, and mount points do not prove that a location is protected, writable, durable, or local; establish those properties in the execution preflight. [[S23]](evidence-register.md#s23) [[S31]](evidence-register.md#s31) [[S50]](evidence-register.md#s50)
+
+If provider Git/DataLad access is better suited to partial or remote execution, clone the exact published repository URL and retrieve only the selected recording bundle; a metadata clone alone does not transfer annexed objects. [[S37]](evidence-register.md#s37) [[S51]](evidence-register.md#s51)
+
+```bash
+datalad clone "$PUBLISHED_REPOSITORY_URL" .workbench/datasets/dsNNNNNN
+datalad get -d .workbench/datasets/dsNNNNNN -- path/to/selected-recording-bundle
+```
 
 ## One NeMAR recording
 
-EEGDash 0.8.4 identifies NeMAR storage but deliberately does not fetch its annex-keyed objects; acquire the exact objects into a separate cache with the repository-published special remote, then use EEGDash offline. [[S31]](evidence-register.md#s31)
+The pinned EEGDash 0.8.4 contract identifies both `nm*` and `on*` NeMAR storage as non-fetchable; acquire exact objects into a separate cache through a provider-published NeMAR CLI, DataLad, git-annex, or direct-file route, then use EEGDash offline. Recheck this branch when the installed EEGDash version changes because newer catalogue/backend behavior may differ. [[S31]](evidence-register.md#s31) [[S51]](evidence-register.md#s51)
 
 ```bash
 git clone https://github.com/nemarDatasets/nm000166.git \
@@ -48,6 +74,8 @@ git -C .workbench/eegdash-cache/nm000166 annex get --from nemar-s3 \
   sub-001/ses-01/eeg/sub-001_ses-01_task-aep_eeg.eeg \
   sub-001/ses-01/eeg/sub-001_ses-01_task-aep_eeg.vhdr
 ```
+
+The `nm000166` commands are a verified worked example, not a URL template for every `nm*` or `on*` accession. Resolve the selected dataset's download methods from its NeMAR record before execution. [[S31]](evidence-register.md#s31) [[S51]](evidence-register.md#s51)
 
 The metadata clone contains BIDS sidecars but annex links do not prove content availability; record `git annex whereis`, the repository commit, the annex key, the content hash, and the exact paths retrieved. [[S05]](evidence-register.md#s05) [[S23]](evidence-register.md#s23) [[S31]](evidence-register.md#s31)
 

@@ -8,7 +8,6 @@ import hashlib
 import importlib.metadata
 import json
 import math
-import os
 import re
 import sys
 import warnings
@@ -46,20 +45,8 @@ def _jsonable(value: Any) -> Any:
 def validate_cache_dir(
     cache_dir: str | Path, protected_sources: Iterable[str | Path] = ()
 ) -> Path:
-    """Resolve a cache and reject known archive roots or protected source trees."""
-    supplied = str(cache_dir).replace("\\", "/").casefold()
+    """Resolve a cache and reject explicitly protected source trees."""
     resolved = Path(cache_dir).expanduser().resolve()
-    normalized = str(resolved).replace("\\", "/").casefold().rstrip("/")
-    drive = resolved.drive.casefold()
-    if (
-        drive == "x:"
-        or supplied == "x:"
-        or supplied.startswith("x:/")
-        or normalized == "/mnt/x"
-        or normalized.startswith("/mnt/x/")
-    ):
-        raise IntakeError("Refusing to use the read-only X: archive as an EEGDash cache")
-
     for source in protected_sources:
         protected = Path(source).expanduser().resolve()
         try:
@@ -78,10 +65,10 @@ def build_filters(
     task: str | None = None,
     run: str | None = None,
 ) -> dict[str, str]:
-    """Build an exact EEGDash/BIDS-entity query without inventing entities."""
+    """Build an exact catalogue/BIDS-entity query without inventing entities."""
     dataset = dataset.strip()
     if not re.fullmatch(r"(?:ds|nm|on)\d{6}|EEG[A-Za-z0-9_-]+", dataset):
-        raise IntakeError(f"Unsupported or malformed EEGDash dataset identifier: {dataset!r}")
+        raise IntakeError(f"Unsupported or malformed dataset accession: {dataset!r}")
     filters = {"dataset": dataset}
     for key, value in {
         "subject": subject,

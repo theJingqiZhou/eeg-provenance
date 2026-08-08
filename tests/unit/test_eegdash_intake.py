@@ -3,7 +3,6 @@ from pathlib import Path
 import mne
 import numpy as np
 import pytest
-
 from scripts.eegdash_intake import (
     IntakeError,
     build_filters,
@@ -15,9 +14,6 @@ from scripts.eegdash_intake import (
 
 
 def test_cache_guard_rejects_archive_and_protected_source(tmp_path: Path) -> None:
-    with pytest.raises(IntakeError, match="X:"):
-        validate_cache_dir("X:/openneurodatasets/eegdash-cache")
-
     source = tmp_path / "source"
     source.mkdir()
     with pytest.raises(IntakeError, match="outside protected"):
@@ -39,6 +35,16 @@ def test_bounded_filters_are_explicit() -> None:
         "run": "1",
     }
     require_bounded_recording(filters)
+    assert build_filters("nm000133", subject="01", task="rest") == {
+        "dataset": "nm000133",
+        "subject": "01",
+        "task": "rest",
+    }
+    assert build_filters("on002724", subject="01", task="rest") == {
+        "dataset": "on002724",
+        "subject": "01",
+        "task": "rest",
+    }
     with pytest.raises(IntakeError, match="subject and task"):
         require_bounded_recording({"dataset": "ds003061", "subject": "001"})
     with pytest.raises(IntakeError, match="malformed"):

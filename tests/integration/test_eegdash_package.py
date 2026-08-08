@@ -21,6 +21,7 @@ def test_pinned_eegdash_surface_and_storage_contract() -> None:
     assert NM000166.__name__ == "NM000166"
     assert expected_backend("ds003061") == "s3"
     assert expected_backend("nm000166") == "nemar"
+    assert expected_backend("on002724") == "nemar"
 
 
 def test_ambiguous_online_query_never_accesses_raw(monkeypatch, tmp_path) -> None:
@@ -50,8 +51,9 @@ def test_ambiguous_online_query_never_accesses_raw(monkeypatch, tmp_path) -> Non
     assert raw_accessed is False
 
 
+@pytest.mark.parametrize("dataset", ["nm000166", "on002724"])
 def test_nemar_online_download_is_refused_before_dataset_construction(
-    monkeypatch, tmp_path
+    monkeypatch, tmp_path, dataset
 ) -> None:
     import eegdash
 
@@ -64,7 +66,7 @@ def test_nemar_online_download_is_refused_before_dataset_construction(
         _load_one(
             tmp_path,
             {
-                "dataset": "nm000166",
+                "dataset": dataset,
                 "subject": "001",
                 "session": "01",
                 "task": "aep",
