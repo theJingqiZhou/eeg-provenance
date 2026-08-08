@@ -6,7 +6,7 @@
     "dataset_id": "ds-example",
     "dataset_version": "git:0123456789abcdef",
     "bids_version": "1.11.1",
-    "source_root": "X:/archive/ds-example",
+    "source_root": "/path/to/protected-source/ds-example",
     "source_uri": "https://example.org/datasets/ds-example",
     "recordings": [
       {
@@ -97,9 +97,9 @@
       "type": "metadata_intake",
       "adaptive": false,
       "software": {
-        "name": "inspect_bids_metadata.py",
-        "version": "git:0123456789abcdef",
-        "command": "python scripts/inspect_bids_metadata.py X:/archive/ds-example"
+        "name": "bids-validator-deno",
+        "version": "2.2.9",
+        "command": "bids-validator-deno /path/to/protected-source/ds-example --schema https://raw.githubusercontent.com/bids-standard/bids-schema/34d59276aa8f34d3e3b2f17723183b5c7ecc1efb/versions/1.11.1/schema.json --format json_pp"
       },
       "parameters": {
         "signal_payload_read": false
@@ -115,7 +115,7 @@
       "sampling_frequency_hz_after": 500.0,
       "reference_before": "online reference documented in EEGReference",
       "reference_after": "online reference documented in EEGReference",
-      "evidence_ids": ["S01", "S03"]
+      "evidence_ids": ["S01", "S03", "S47", "S48"]
     }
   ],
   "qc": {

@@ -9,13 +9,14 @@ This register is the only source namespace used by the skill. “Supports” des
 - [Standards, reporting, and provenance (S01–S06)](#s01)
 - [Signal processing and artifacts (S07–S19)](#s07)
 - [Validation and leakage (S20–S22)](#s20)
-- [Software and dataset contracts (S23–S33)](#s23)
+- [Software, dataset, and archive contracts (S23–S35, S37–S54)](#s23)
+- [Forward-model methods (S36)](#s36)
 
 ## Search and selection protocol
 
-This is a targeted scoping review for EEG intake, preprocessing decisions, channel/montage harmonization, leakage control, software behavior, dataset-specific provenance, and reproducibility. Searches covered PubMed, Crossref/DOI resolution, BIDS, W3C, MNE, MNE-BIDS, EEGLAB, EEGDash, OpenNeuro, NeMAR, and official project documentation. Representative queries included `EEG-BIDS specification reference electrodes channels`, `COBIDAS MEEG preprocessing reporting`, `EEG filter design artifacts`, `EEG interpolation spherical splines`, `EEG reference rank`, `EEG ICA high-pass`, `EEG preprocessing multiverse decoding`, `EEG cross-validation leakage`, `EEGDash metadata lazy cache`, `OpenNeuro ds003061`, and `NeMAR nm000166 M3CV`.
+This is a targeted scoping review for EEG intake, preprocessing decisions, channel/montage harmonization, leakage control, software behavior, dataset-specific provenance, reproducibility, remote cache execution, and the minimum anatomy/head-model readiness needed for EEG forward solutions. Searches covered PubMed, Crossref/DOI resolution, BIDS, the BIDS Validator, PyBIDS, W3C, MNE, MNE-BIDS, SciPy, pymatreader, FreeSurfer, EEGLAB, EEGDash, TorchEEG, MOABB, Braindecode, PyHealth, PyEDFlib, DataLad, git-annex, Google Colab, OpenNeuro, NeMAR, BCI Competition IV, SEED, and TUH/NEDC official documentation. Representative queries included `EEG-BIDS specification reference electrodes channels`, `COBIDAS MEEG preprocessing reporting`, `EEG filter design artifacts`, `EEG interpolation spherical splines`, `EEG reference rank`, `EEG ICA high-pass`, `EEG preprocessing multiverse decoding`, `EEG cross-validation leakage`, `EEG BEM FEM head volume conductor`, `MNE MRI head transform`, `FreeSurfer recon-all SUBJECTS_DIR`, `MNE hdf5 pymatreader MATLAB 7.3`, `SciPy loadmat HDF5 7.3`, `remote EEG cache Colab git-annex standalone`, `DataLad get drop`, `EEGDash metadata lazy cache`, `TorchEEG datasets SEED BCICIV2a`, `MOABB dataset MNE Raw`, `Braindecode datasets preprocessing windows models`, `PyHealth TUAB TUEV set_task processors cache models`, `PyBIDS BIDSLayout get_metadata`, `BIDS Validator JSON git annex`, `OpenNeuro ds003061`, `NeMAR nm000166 M3CV`, `BCI Competition IV 2a GDF events`, `SEED Preprocessed_EEG`, `TUH EEG channel labels TUAB split`, and `TUH EEG SSH key rsync access`.
 
-Include primary methods/results papers, standards, consensus reports, and versioned official software documentation that directly support an in-scope statement. Exclude reviews used only as citation proxies, unversioned tutorials when a stable API/specification is available, clinical interpretation, source localization, model-selection advice, and uncited rules inherited from ClaudeEEG. Deduplicate by DOI or canonical specification URL. Prefer a primary paper for empirical effects and official documentation for current software contracts. Record proposal status explicitly.
+Include primary methods/results papers, standards, consensus reports, and versioned official software documentation that directly support an in-scope statement. Exclude reviews used only as citation proxies, unversioned tutorials when a stable API/specification is available, clinical interpretation, inverse-method or source-estimator selection advice, and uncited rules inherited from ClaudeEEG. Source imaging is limited to anatomy discovery, coordinate alignment, forward-model readiness, and provenance. Deduplicate by DOI or canonical specification URL. Prefer a primary paper for empirical effects and official documentation for current software contracts. Record proposal status explicitly.
 
 Searches were run on 2026-08-08. Dynamic result counts were not used as an eligibility criterion; each retained item was resolved to its DOI or canonical official page, screened against the claim it supports, and deduplicated before receiving one source ID.
 
@@ -29,7 +30,13 @@ Searches were run on 2026-08-08. Dynamic result counts were not used as an eligi
 | Pipeline sensitivity | PubMed, DOI resolver | `EEG preprocessing multiverse robustness` | S19 |
 | Evaluation leakage | PubMed, DOI resolver | `neuroimaging cross-validation caveats`; `EEG temporal autocorrelation cross-validation leakage`; `structured data blocked cross-validation` | S20–S22 |
 | Software contracts | MNE, MNE-BIDS, EEGLAB, MathWorks official documentation | Stable API pages and installed-tool routes for the named functions/servers | S14–S15, S24–S30 |
-| Dataset access | EEGDash, OpenNeuro, NeMAR, version-pinned source | `EEGDash metadata lazy cache`; dataset pages and source-backend implementation | S31–S33 |
+| Dataset access | EEGDash, OpenNeuro, NeMAR, BCI Competition IV, SEED, TUH/NEDC, git-annex, version-pinned source | `EEGDash metadata lazy cache`; `OpenNeuro ds accession DataLad git-annex`; `NeMAR nm on accession download`; dataset pages and source-backend implementation; `BCI Competition IV 2a event codes GDF`; `SEED preprocessed EEG 200 Hz`; `TUH EEG channel labels configuration`; `TUAB subject disjoint`; `TUH EEG SSH key rsync access`; `git-annex content availability crippled filesystem` | S31–S33, S37–S41, S51, S54 |
+| Non-BIDS containers and adapters | EDF+ specification, MNE, SciPy, TorchEEG, MOABB, PyEDFlib | `EDF fixed header per-signal samples`; `MNE read_raw_gdf preload`; `scipy whosmat variables shape class`; `TorchEEG built-in custom dataset cache`; `MOABB datasets MNE Raw`; `PyEDFlib signal headers` | S42–S46 |
+| Dataset-to-model frameworks | Braindecode, PyHealth, version-pinned package/source | `Braindecode datasets preprocessing windows models`; `PyHealth TUAB TUEV set_task processors cache models` | S52–S53 |
+| BIDS validation and queries | BIDS Validator, PyBIDS | `BIDS Validator JSON git-ref annex`; `PyBIDS BIDSLayout get_metadata derivatives` | S47–S48 |
+| MATLAB HDF5 route | MNE, SciPy, pymatreader, MathWorks | `MNE hdf5 extra pymatreader`; `SciPy loadmat MATLAB 7.3 HDF5` | S49 |
+| Remote acquisition and cache | inspected project commit, DataLad, git-annex, Google Colab | `remote EEG cache`; `DataLad get drop`; `git-annex Linux standalone verify`; `Colab VM persistence Drive I/O` | S50 |
+| Anatomy and forward readiness | BIDS, MNE, FreeSurfer, PubMed | `T1w anatomical landmarks`; `MNE head MRI trans BEM`; `recon-all SUBJECTS_DIR`; `EEG BEM FEM volume conductor` | S01, S23, S34–S36 |
 
 ### Evidence classes
 
@@ -46,9 +53,9 @@ Searches were run on 2026-08-08. Dynamic result counts were not used as an eligi
 ## S01 — BIDS EEG specification
 
 - **Type / class:** Standard specification; `HARD_INVARIANT`, `SOFTWARE_CONTRACT`.
-- **Source:** BIDS Contributors. *Brain Imaging Data Structure 1.11.1 — Electroencephalography*. [Stable specification](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/electroencephalography.html).
-- **Supports:** EEG sidecar requirements; separation of channels from electrodes; channel status, units, reference and filter metadata; electrode coordinates and coordinate-system metadata.
-- **Limits:** BIDS describes representation and required/recommended metadata, not the scientific validity of a preprocessing choice. “Stable” can advance; record the dataset and validator versions.
+- **Source:** BIDS Contributors. *Brain Imaging Data Structure 1.11.1*, PDF release `2b3e7e3`, 2026-02-19: common principles and file formats (PDF pp. 47–60), dataset-level metadata and events (pp. 65–89), and Electroencephalography (pp. 185–203). [Official 1.11.1 EEG specification](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/electroencephalography.html).
+- **Supports:** Requirement levels; source/raw/derived distinctions; filename and TSV/JSON rules; inheritance resolution; dataset description, participants, sessions, scans, and events; EEG storage formats and sidecar requirements; channels versus electrodes; channel status, units, reference and filter metadata; electrode coordinates and coordinate-system metadata.
+- **Limits:** BIDS describes representation and required/recommended metadata, not the scientific validity of a preprocessing choice. The `stable` URL can advance; pin decisions to 1.11.1 and record the validator version.
 
 <a id="s02"></a>
 ## S02 — EEG-BIDS extension paper
@@ -222,9 +229,9 @@ Searches were run on 2026-08-08. Dynamic result counts were not used as an eligi
 ## S23 — BIDS derivatives and provenance
 
 - **Type / class:** Official specification guidance; `CONSENSUS_REPORTING`, `SOFTWARE_CONTRACT`.
-- **Source:** BIDS Contributors. *Derivatives*. [BIDS derivatives guidance](https://bids.neuroimaging.io/getting_started/folders_and_files/derivatives.html); *BEP028 Provenance* [proposal specification](https://bids-specification.readthedocs.io/en/bep028/modality-agnostic-files/provenance.html).
-- **Supports:** Keep derivatives distinct from raw data and record generated-by/source relationships. BEP028 supplies a useful emerging vocabulary for activities and inputs.
-- **Limits:** BEP028 is a proposal, not part of stable BIDS; this skill does not claim BIDS-Prov conformance.
+- **Source:** BIDS Contributors. *Brain Imaging Data Structure 1.11.1*: storage and derived dataset description (PDF pp. 51–53, 65–70) and BIDS Derivatives (pp. 365–372). [Official BIDS Derivatives specification](https://bids-specification.readthedocs.io/en/stable/derivatives/introduction.html).
+- **Supports:** Keep derivatives distinct from raw data; require a derivative dataset description and `GeneratedBy`; name outputs from source entities without raw-name collisions; propagate still-valid required metadata; record dataset sources and immediate file inputs with `SourceDatasets`, `DatasetLinks`, and `Sources`; treat `RawSources` as deprecated.
+- **Limits:** BIDS Derivatives standardizes dataset/file representation but does not encode every activity parameter, fit scope, random seed, channel/rank transition, QC result, or scientific limitation. This project ledger supplements those gaps and does not by itself establish BIDS conformance.
 
 <a id="s24"></a>
 ## S24 — EEGLAB functions and data structures
@@ -305,3 +312,171 @@ Searches were run on 2026-08-08. Dynamic result counts were not used as an eligi
 - **Source:** Huang G, et al. M3CV: A multi-subject, multi-session, and multi-task database for EEG-based biometrics challenge. *NeuroImage*. 2022;264:119666. [doi:10.1016/j.neuroimage.2022.119666](https://doi.org/10.1016/j.neuroimage.2022.119666), [PubMed 36206939](https://pubmed.ncbi.nlm.nih.gov/36206939/), [EEGDash/NeMAR dataset brief](https://eegdash.org/api/dataset/eegdash.dataset.NM000166.html).
 - **Supports:** The study contains 95 distributed participants with repeated sessions and multiple tasks for cross-subject, cross-session, and cross-task analysis. The NeMAR BIDS conversion concatenates distributed four-second pre-epoched files into pseudo-continuous task recordings; original continuous data are unavailable. The distributed signals had already undergone manual bad-channel interpolation, filtering/notching, linked-mastoid rereferencing, visually guided ICA artifact removal, and downsampling to 250 Hz.
 - **Limits:** The BIDS descriptor labels the converted tree `DatasetType: raw`, but `GeneratedBy`, recording sidecars, and the dataset documentation establish prior transformations; consumers must not interpret `raw` as untouched acquisition. Concatenation does not restore original temporal adjacency, discarded channels/epochs, 1000 Hz samples, or pre-cleaning signals.
+
+<a id="s34"></a>
+## S34 — MNE forward and coregistration contract
+
+- **Type / class:** Official software documentation, MNE 1.12; `SOFTWARE_CONTRACT`.
+- **Source:** MNE Developers. *Forward models and source spaces*, *Head model and forward computation*, and MRI processing API. [Forward tutorials](https://mne.tools/stable/auto_tutorials/forward/index.html), [head model and forward computation](https://mne.tools/stable/auto_tutorials/forward/30_forward.html), [MRI processing API](https://mne.tools/stable/api/mri.html).
+- **Supports:** MNE treats source space, head model, sensor information, and the head-to-MRI transform as distinct forward-model inputs; coregistration places MRI/head geometry and sensors in a common coordinate system, and the transform can be stored in a `-trans.fif` file. MNE documents subject-MRI and template-MRI branches separately.
+- **Limits:** This is an MNE 1.12 software contract, not a validation of a dataset's geometry or a universal source-imaging workflow. Record the installed version, selected files, transform, conductivities, source space, and QC.
+
+<a id="s35"></a>
+## S35 — FreeSurfer reconstruction contract
+
+- **Type / class:** Official software documentation; `SOFTWARE_CONTRACT`.
+- **Source:** FreeSurfer Developers. *recon-all* and *FreeSurfer and BIDS*. [recon-all documentation](https://surfer.nmr.mgh.harvard.edu/fswiki/recon-all), [FreeSurfer BIDS notes](https://surfer.nmr.mgh.harvard.edu/fswiki/BIDS).
+- **Supports:** `recon-all -subject <id> -i <volume> -all` creates a subject reconstruction beneath `SUBJECTS_DIR`; the subject directory contains MRI and surface outputs plus logs/status. A conventional FreeSurfer subject tree is not, by default, a BIDS-compatible derivative representation.
+- **Limits:** Flags, outputs, and BIDS export behavior are version-specific. Presence of a subject directory does not establish successful reconstruction or scientific usability; inspect completion state, logs, version/build stamp, manual edits, and surface/segmentation QC.
+
+<a id="s36"></a>
+## S36 — EEG/MEG volume-conductor modeling
+
+- **Type / class:** Simulation-based methods guideline; `CONDITIONAL_EVIDENCE`.
+- **Source:** Vorwerk J, Cho JH, Rampp S, Hamer H, Knösche TR, Wolters CH. A guideline for head volume conductor modeling in EEG and MEG. *NeuroImage*. 2014;100:590–607. [doi:10.1016/j.neuroimage.2014.06.040](https://doi.org/10.1016/j.neuroimage.2014.06.040), [PubMed 24971512](https://pubmed.ncbi.nlm.nih.gov/24971512/).
+- **Supports:** An EEG/MEG volume-conductor model combines anatomical compartment geometry with electrical conductivity assumptions; compartment selection can materially change simulated forward fields, and BEM/FEM choices must be reported with the represented tissues and conductivities.
+- **Limits:** The quantitative comparisons are simulations under particular geometries, sources, conductivities, and numerical methods. They do not establish one universally optimal head model or make every tissue refinement necessary for every endpoint.
+
+<a id="s37"></a>
+## S37 — git-annex availability boundary
+
+- **Type / class:** Official software documentation and local compatibility policy; `SOFTWARE_CONTRACT`, `LOCAL_POLICY`.
+- **Source:** git-annex Developers. *git-annex* configuration and repository documentation. [Official manual](https://git-annex.branchable.com/git-annex/), [crippled-filesystem design note](https://git-annex.branchable.com/design/assistant/blog/day_188__crippled_filesystem_support/).
+- **Supports:** Available annexed content resides in `.git/annex/objects/`, while filesystems without symlink, hard-link, or Unix-permission support require special handling. Metadata-only intake must keep work-tree representation separate from verified content availability.
+- **Limits:** git-annex does not define the `.lnk` filename convention used by the tested Windows archives. The inspector's `.lnk` recognition is a conservative local compatibility shim for a logical recognized extension and does not replace `git annex whereis`, `find --not --in here`, or content verification in a configured git-annex environment.
+
+<a id="s38"></a>
+## S38 — BCI Competition IV dataset 2a contract
+
+- **Type / class:** Official dataset protocol; `HARD_INVARIANT`, `SOFTWARE_CONTRACT`.
+- **Source:** Brunner C, Leeb R, Müller-Putz GR, Schlögl A, Pfurtscheller G. *BCI Competition 2008 — Graz data set A*. [Official BCI Competition IV dataset 2a description](https://www.bbci.de/competition/IV/desc_2a.pdf).
+- **Supports:** Nine subjects with one training and one evaluation GDF session; 288 four-class motor-imagery trials per session; 22 monopolar EEG plus three EOG channels sampled at 250 Hz; acquisition reference, ground, passband and notch; event-code meanings, rejected-trial markers, run boundaries represented by missing samples, channel order, and the original competition's evaluation constraints.
+- **Limits:** The original evaluation files withheld class cues during the competition, but later release bundles can include separate official label files. The competition's causal-classifier and EOG-use rules apply when reproducing that benchmark and do not establish universal constraints for every secondary analysis.
+
+<a id="s39"></a>
+## S39 — SEED release contract
+
+- **Type / class:** Official dataset documentation and primary methods paper; `CONSENSUS_REPORTING`, `SOFTWARE_CONTRACT`.
+- **Source:** BCMI Laboratory. *SEED Dataset*. [Official SEED description](https://bcmi.sjtu.edu.cn/home/seed/seed.html). Zheng WL, Lu BL. Investigating critical frequency bands and channels for EEG-based emotion recognition with deep neural networks. *IEEE Transactions on Autonomous Mental Development*. 2015;7(3):162–175. [doi:10.1109/TAMD.2015.2431497](https://doi.org/10.1109/TAMD.2015.2431497).
+- **Supports:** Fifteen participants, three sessions approximately one week apart, 15 film trials per session, and a 62-channel acquisition; the distributed `Preprocessed_EEG` product contains movie-segmented arrays already downsampled to 200 Hz and filtered from 0–75 Hz, while `ExtractedFeatures` contains feature derivatives. The official page documents negative/neutral/positive as -1/0/+1 and states that channel order is supplied separately.
+- **Limits:** MAT arrays do not inherently prove axis meanings, units, channel order, label encoding, or preprocessing history. Different local release workbooks may use another numeric code; preserve the exact source and declare any translation rather than silently reconciling it.
+
+<a id="s40"></a>
+## S40 — TUH EEG Corpus organization and channel contract
+
+- **Type / class:** Primary corpus paper, versioned release record, and official technical report; `CONSENSUS_REPORTING`, `SOFTWARE_CONTRACT`.
+- **Source:** Obeid I, Picone J. The Temple University Hospital EEG Data Corpus. *Frontiers in Neuroscience*. 2016;10:196. [doi:10.3389/fnins.2016.00196](https://doi.org/10.3389/fnins.2016.00196). NEDC. *TUH EEG Corpus v2.0.1 AAREADME*. [Official v2.0.1 release record](https://isip.piconepress.com/projects/nedc/data/tuh_eeg/tuh_eeg/v2.0.1/AAREADME.txt). Ferrell S, et al. *The Temple University Hospital EEG Corpus: Electrode Location and Channel Labels*. [Official technical-report directory](https://isip.piconepress.com/publications/reports/2020/tuh_eeg/electrodes/).
+- **Supports:** The versioned subject/session/configuration/token path contract; a 1,643 GB v2.0.1 corpus whose README internally reports 69,670 EDF files in prose but 69,672 in its command/output lines; more than 40 channel configurations and recording rates ranging from 250–1024 Hz; randomized subject identity; institutional label variability; lookup by label rather than absolute index; stored referential signals versus compatible display montage; auxiliary physiologic channels; pruned clinical source material; and independent treatment of EDF tokens.
+- **Limits:** Counts and paths are release-specific, and the official catalogue can publish newer versions. A configuration directory describes compatibility rather than proving that a bipolar montage has been applied to stored samples; channel role still requires label-level inspection.
+
+<a id="s41"></a>
+## S41 — TUH Abnormal EEG Corpus v3.0.1 contract
+
+- **Type / class:** Versioned official subset documentation and thesis; `HARD_INVARIANT`, `SOFTWARE_CONTRACT`.
+- **Source:** NEDC. *TUH Abnormal EEG Corpus v3.0.1 AAREADME*. [Official v3.0.1 release record](https://isip.piconepress.com/projects/nedc/data/tuh_eeg/tuh_eeg_abnormal/v3.0.1/AAREADME.txt). Lopez S. *Automated Identification of Abnormal EEGs*. Temple University, 2017. [Official thesis directory](https://isip.piconepress.com/publications/ms_theses/2017/abnormal/).
+- **Supports:** TUAB v3.0.1 contains 2,993 selected EDF recordings organized by publisher `train`/`eval`, `normal`/`abnormal`, and `01_tcp_ar`; train and evaluation subjects are disjoint; training can contain multiple sessions and 54 subjects represented under both class labels; one pruned EDF was selected per session; and the folder label is a release annotation for the chosen record.
+- **Limits:** The release label is not a new clinical judgment by the skill, and TUAB is not the complete longitudinal TUEG record. The official evaluation partition must remain untouched by training or adaptive preprocessing when reproducing the benchmark; internal validation within training remains subject-grouped.
+
+<a id="s42"></a>
+## S42 — EDF/EDF+ container header contract
+
+- **Type / class:** Official format specification; `HARD_INVARIANT`, `SOFTWARE_CONTRACT`.
+- **Source:** European Data Format developers. *EDF and EDF+ specifications*. [Official EDF specification](https://www.edfplus.info/specs/edf.html), [official EDF+ specification](https://www.edfplus.info/specs/edfplus.html).
+- **Supports:** The fixed EDF header and per-signal header fields encode signal labels, physical dimensions and extrema, digital extrema, prefilter text, data-record duration, and samples per data record; per-signal sampling frequency is derived from samples per data record divided by record duration.
+- **Limits:** A syntactically readable header does not establish experimental semantics, label ontology, montage history, diagnostic meaning, or data quality. EDF+ annotations and vendor conventions require their applicable release contract.
+
+<a id="s43"></a>
+## S43 — Metadata-only GDF and MAT software contracts
+
+- **Type / class:** Official software documentation; `SOFTWARE_CONTRACT`.
+- **Source:** MNE Developers. `mne.io.read_raw_gdf`. [MNE stable API](https://mne.tools/stable/generated/mne.io.read_raw_gdf.html). SciPy Developers. `scipy.io.whosmat`. [SciPy stable API](https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.whosmat.html).
+- **Supports:** MNE can construct a lazy Raw object from GDF with `preload=False`, exposing header-derived channel information and annotations without preloading the sample matrix; SciPy `whosmat` lists MAT variable names, shapes, and data classes without loading those arrays as analysis data.
+- **Limits:** Reader types and generated channel names are software interpretations, not dataset semantics. GDF event meaning, MAT axis meaning, unit, channel order, label mapping, and prior transformations require a separate protocol or release contract; small non-signal companion metadata can be read explicitly when bounded and recorded.
+
+<a id="s44"></a>
+## S44 — TorchEEG dataset adapters
+
+- **Type / class:** Official software documentation and version-pinned source, TorchEEG 1.1.3; `SOFTWARE_CONTRACT`.
+- **Source:** TorchEEG Developers. *torcheeg.datasets* and *Introduction to the datasets Module*. [Dataset API](https://torcheeg.readthedocs.io/en/stable/torcheeg.datasets.html), [dataset tutorial](https://torcheeg.readthedocs.io/en/stable/auto_examples/examples_datasets.html), [TorchEEG v1.1.3 source](https://github.com/torcheeg/torcheeg/tree/v1.1.3/torcheeg/datasets).
+- **Supports:** TorchEEG includes versioned adapters for multiple non-BIDS/apply-to-access EEG datasets and generic `FolderDataset`, `CSVFolderDataset`, and `MNERawDataset` routes. Built-in adapters encode filename, array, label, windowing, and channel-count assumptions; dataset construction can read samples, segment them, apply offline transforms, and create an IO cache at `io_path`.
+- **Limits:** An adapter is executable software behavior, not primary evidence that a local archive matches the assumed release. Adapter defaults can transform samples, labels, axes, and partitions and can write caches; inspect version-pinned source and compare every assumption with official documentation and local metadata before execution. Do not instantiate a built-in adapter merely to perform read-only intake.
+
+<a id="s45"></a>
+## S45 — MOABB dataset abstraction
+
+- **Type / class:** Official software documentation and methods paper; `SOFTWARE_CONTRACT`.
+- **Source:** MOABB Developers. *API and Main Concepts*. [Official dataset API](https://moabb.neurotechx.com/docs/api.html). Jayaram V, Barachant A. MOABB: trustworthy algorithm benchmarking for BCIs. *Journal of Neural Engineering*. 2018;15(6):066011. [doi:10.1088/1741-2552/aadea0](https://doi.org/10.1088/1741-2552/aadea0).
+- **Supports:** MOABB supplies dataset classes that obtain supported BCI releases and expose recordings as MNE Raw objects, while paradigms, evaluations, and pipelines define later processing and measurement. Dataset/session pooling and evaluation design are explicit software choices.
+- **Limits:** MOABB's downloaded representation and adapter behavior remain version-specific. A supported class is not evidence that a separately obtained archive has identical files, labels, release version, or preprocessing; inspect source and compare with primary dataset documentation before reuse.
+
+<a id="s46"></a>
+## S46 — PyEDFlib header reader
+
+- **Type / class:** Official software documentation; `SOFTWARE_CONTRACT`.
+- **Source:** PyEDFlib Developers. *PyEDFlib EDF/BDF reader*. [Official documentation](https://pyedflib.readthedocs.io/en/latest/ref/edfreader.html), [documented reader source](https://pyedflib.readthedocs.io/en/latest/_modules/pyedflib/edfreader.html).
+- **Supports:** `EdfReader.getSignalHeaders()` exposes per-signal label, physical dimension, sample frequency, physical/digital extrema, prefilter, and transducer fields; these calls read the container header without requiring `readSignal` sample access.
+- **Limits:** Header fields and labels are source observations, not a channel ontology, montage interpretation, diagnostic label, or guarantee of correct units. Do not call sample-reading methods during metadata-only intake, and record the installed PyEDFlib version.
+
+<a id="s47"></a>
+## S47 — Official BIDS Validator
+
+- **Type / class:** Official standard-validation software documentation and exercised validator 2.2.9; `SOFTWARE_CONTRACT`.
+- **Source:** BIDS Validator Developers. *The BIDS Validator* and *Using the command line*. [Official documentation](https://bids-validator.readthedocs.io/en/latest/), [command-line reference](https://bids-validator.readthedocs.io/en/latest/user_guide/command-line.html). BIDS Contributors. [Official historical 1.11.1 schema at reviewed commit `34d5927`](https://github.com/bids-standard/bids-schema/tree/34d59276aa8f34d3e3b2f17723183b5c7ecc1efb/versions/1.11.1).
+- **Supports:** The schema-based validator assesses BIDS compliance, emits text or JSON issue reports, accepts issue-severity configuration, and can validate raw/derivative/study datasets. The latest documentation describes Git-ref validation and an experimental preferred git-annex remote, while the web validator performs local browser-side validation without transferring selected data to a server.
+- **Limits:** CLI options are release-specific: the exercised 2.2.9 PyPI binary exposes `--preferredRemote` but not the newer documented `--git-ref`. Validator success establishes conformance to the selected schema/software contract, not scientific validity, acquisition truth, preprocessing appropriateness, object availability at every annex remote, or endpoint sufficiency. Pin the validator and BIDS versions, inspect `--help`, and preserve warnings/configuration.
+
+<a id="s48"></a>
+## S48 — PyBIDS layout and inheritance queries
+
+- **Type / class:** Official software documentation, PyBIDS 0.22.0; `SOFTWARE_CONTRACT`.
+- **Source:** PyBIDS Developers. `bids.layout.BIDSLayout`. [Official 0.22.0 API](https://bids-standard.github.io/pybids/generated/bids.layout.BIDSLayout.html), [PyBIDS API reference](https://bids-standard.github.io/pybids/api.html).
+- **Supports:** `BIDSLayout` indexes BIDS entities in memory or a database, can use the official BIDS schema configuration, queries raw and derivative scopes, exposes dataset descriptions and file/entity tables, resolves inherited JSON through `get_metadata`, and finds associated or nearest files.
+- **Limits:** `validate=True` filters indexing through PyBIDS' own validation layer and is not a replacement for the official Validator. Effective metadata do not by themselves preserve every contributing sidecar path or prove historical truth; record relevant source files and conflicts separately, and avoid persistent database paths inside an immutable source archive.
+
+<a id="s49"></a>
+## S49 — MNE HDF5 and MATLAB v7.3 route
+
+- **Type / class:** Official software documentation and exercised MNE 1.12.1 environment; `SOFTWARE_CONTRACT`.
+- **Source:** MNE Developers. *Installing MNE-Python with HDF5 support* and *Frequently Asked Questions*. [MNE 1.12.1 installation documentation](https://mne.tools/stable/install/manual_install.html), [MNE persistence guidance](https://mne.tools/stable/help/faq.html). pymatreader Developers. `pymatreader.read_mat`. [Official pymatreader documentation](https://pymatreader.readthedocs.io/en/latest/). SciPy Developers. `scipy.io.loadmat`. [SciPy stable API](https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.matlab.loadmat.html). MathWorks. *MAT-File Versions*. [Official MATLAB documentation](https://www.mathworks.com/help/matlab/import_export/mat-file-versions.html).
+- **Supports:** MNE 1.12.1 documents `mne[hdf5]` as the pip extra for functions requiring HDF5 and names h5io and pymatreader as its added packages; pymatreader provides one interface for MAT files older than 7.3 and HDF5-based v7.3 files with optional variable selection; SciPy `loadmat` supports v4, v6, and v7 through v7.2 but not the HDF5/v7.3 interface; MATLAB documents v7.3 as HDF5-based. The locked exercise resolved MNE 1.12.1, h5io 0.2.5, h5py 3.16.0, and pymatreader 1.2.3 and round-tripped selected numeric variables from a temporary v7.3 fixture without MATLAB.
+- **Limits:** HDF5 readability does not supply dataset-specific MATLAB semantics. Pymatreader converts MATLAB containers to Python types, while h5io serves HDF5 serialization used by MNE and other Python data; neither proves EEG axes, units, channel labels, event meaning, acquisition history, or that an arbitrary MAT structure is an EEGLAB/MNE object. Inspect hierarchy metadata first and load only documented variables needed by the endpoint.
+
+<a id="s50"></a>
+## S50 — Remote acquisition and durable cache execution
+
+- **Type / class:** Version-pinned project case study and official runtime/data-management documentation; `SOFTWARE_CONTRACT`, `LOCAL_POLICY`.
+- **Source:** Zhou J. *brainprint-rseeg-data*, inspected read-only at commit `cd4adb9d2b72f9f3953302892f6050b921821173`: [repository snapshot](https://github.com/theJingqiZhou/brainprint-rseeg-data/tree/cd4adb9d2b72f9f3953302892f6050b921821173), [README](https://github.com/theJingqiZhou/brainprint-rseeg-data/blob/cd4adb9d2b72f9f3953302892f6050b921821173/README.md), [git-annex bootstrap](https://github.com/theJingqiZhou/brainprint-rseeg-data/blob/cd4adb9d2b72f9f3953302892f6050b921821173/src/brainprint_rseeg_data/builder/utils/datalad.py), [bounded fetcher](https://github.com/theJingqiZhou/brainprint-rseeg-data/blob/cd4adb9d2b72f9f3953302892f6050b921821173/src/brainprint_rseeg_data/builder/fetchers.py), and [cache verification](https://github.com/theJingqiZhou/brainprint-rseeg-data/blob/cd4adb9d2b72f9f3953302892f6050b921821173/src/brainprint_rseeg_data/builder/utils/cache.py). DataLad Developers. [Basic `get` behavior](https://docs.datalad.org/en/master/basics.html) and [`drop` reference](https://docs.datalad.org/en/latest/generated/man/datalad-drop.html). git-annex Developers. [Linux standalone installation](https://git-annex.branchable.com/install/Linux_standalone/) and [download verification](https://git-annex.branchable.com/install/verifying_downloads/). Google. [Colab FAQ](https://research.google.com/colaboratory/faq.html).
+- **Supports:** The inspected project demonstrates direct compute-side metadata checkout, selected annex-object retrieval, bounded fetch/process/drop batches, separate ephemeral source/staging roots, resumable shard state, persistent Drive-backed cache output, record metadata, and SHA-256 manifests. Its Colab bootstrap detects a missing TCP/UDP protocol database and installs `netbase`, and it can install a standalone git-annex bundle when the image lacks a packaged binary. DataLad documents path-scoped `get`, safe-by-default `drop`, and the safety checks disabled by reckless availability mode; git-annex publishes self-contained Linux bundles and signed-download verification; Colab documents ephemeral VM lifetimes plus Drive mount, quota, item-count, and small-I/O limitations.
+- **Limits:** The Colab paths, Google Drive backend, `netbase` repair, current standalone bundle, source remotes, TFRecord format, and reckless drop decision are project- and runtime-specific. The reviewed notebook disables bundle-signature verification even though its helper can verify signatures; do not copy that exception without an independently verified artifact policy. Other legacy VMs may lack a compatible architecture/kernel, package manager, privileges, GPG, DNS, outbound HTTPS, protocol database, persistent mount, or remote credentials. A preflight and explicit fallback are required before bulk retrieval, and remote acquisition does not relax dataset access terms or scientific preprocessing/evaluation constraints.
+
+<a id="s51"></a>
+## S51 — OpenNeuro and NeMAR accession routing
+
+- **Type / class:** Official provider and software documentation; `SOFTWARE_CONTRACT`.
+- **Source:** OpenNeuro Developers. *Git access to OpenNeuro datasets* and *OpenNeuro command line interface*. [Official Git/DataLad/git-annex access](https://docs.openneuro.org/git), [official CLI download documentation](https://docs.openneuro.org/packages/openneuro-cli.html). NeMAR. *Download this dataset*, represented by provider records for [`nm000245`](https://ww2.nemar.org/dataset/nm000245) and [`on004840`](https://ww2.nemar.org/dataset/on004840). EEGDash Developers. `EEGDash` and `EEGDashDataset`. [Official dataset API](https://eegdash.org/api/dataset/eegdash.html), [dataset classes](https://eegdash.org/api/dataset/eegdash.dataset.html).
+- **Supports:** `dsNNNNNN` is an OpenNeuro accession in this workflow, while NeMAR publishes both `nmNNNNNN` and `onNNNNNN` accessions. OpenNeuro documents CLI, direct Git, DataLad, and git-annex access in addition to exported object storage; NeMAR dataset records expose multiple resumable routes that can include NeMAR CLI, DataLad, git-annex, archive, and manifest/direct-file download. EEGDash accepts dataset identifiers for metadata queries and provides a separate dataset/cache access layer. These are alternative transports or catalogue views of provider datasets, not competing ownership identities.
+- **Limits:** Prefix recognition is routing, not complete identity resolution. Do not derive a repository URL, snapshot, version, DOI, or cross-provider mapping from the prefix alone; use the provider record and preserve related identifiers explicitly. Available routes, authentication, mirrors, snapshots, and EEGDash backend behavior can differ by dataset and software version. The cited NeMAR records demonstrate both accession families and platform download options but do not guarantee that every option is present for every dataset.
+
+<a id="s52"></a>
+## S52 — Braindecode dataset-to-decoder contract
+
+- **Type / class:** Official software documentation and version-pinned source, Braindecode 1.7.0; `SOFTWARE_CONTRACT`.
+- **Source:** Braindecode Developers. *Braindecode — Decode raw EEG, ECoG and MEG with deep learning* and API reference. [Official stable overview](https://braindecode.org/stable/index.html), [official dataset/preprocessing API](https://braindecode.org/stable/api.html), [Braindecode v1.7.0 source](https://github.com/braindecode/braindecode/tree/v1.7.0), [PyPI 1.7.0 release](https://pypi.org/project/braindecode/1.7.0/).
+- **Supports:** Braindecode provides dataset abstractions for MNE objects, MOABB and BIDS routes; MNE-backed preprocessing; event- and fixed-window construction; EEG-specific augmentation; EEG model implementations; and sklearn/skorch-style training interfaces. Version 1.7.0 exports `RawDataset` and `EEGNet`; preprocessing and window calls carry explicit parameters and can mutate or save derived datasets.
+- **Limits:** Dataset wrappers can delegate retrieval and encode release assumptions, but do not replace publisher documentation or prove local-release equivalence. Preprocessing, windowing, augmentation, samplers, model architecture, pretrained weights, and evaluation remain separate scientific choices. On 2026-08-08 the official stable pages were labeled 1.5.1 while the installed/pinned release was 1.7.0; copy API names only from the exercised runtime or matching source tag. In the exercised 1.7.0 wheel, the `EEGNet` warning recommends `final_layer_linear` even though the constructor rejects that keyword, so warnings also require runtime verification.
+
+<a id="s53"></a>
+## S53 — PyHealth signal dataset, task, cache, and model contract
+
+- **Type / class:** Official software documentation and version-pinned source, PyHealth 2.0.1; `SOFTWARE_CONTRACT`.
+- **Source:** PyHealth Developers. *Architecture Overview*, *Datasets*, *Tasks*, *Processors*, and *Models*. [Architecture](https://pyhealth.readthedocs.io/en/latest/api/overview.html), [datasets and cache](https://pyhealth.readthedocs.io/en/latest/api/datasets.html), [tasks and `set_task`](https://pyhealth.readthedocs.io/en/latest/api/tasks.html), [processors](https://pyhealth.readthedocs.io/en/latest/api/processors.html), [models](https://pyhealth.readthedocs.io/en/latest/api/models.html), [PyHealth v2.0.1 source](https://github.com/sunlabuiuc/PyHealth/tree/v2.0.1), [PyPI 2.0.1 release](https://pypi.org/project/pyhealth/2.0.1/).
+- **Supports:** PyHealth 2.0.1 represents source data through `BaseDataset`, turns a task into an indexable `SampleDataset`, fits configured processors, and serializes Parquet/LitData caches. Its signal inventory includes sleep and Temple University EEG dataset/task routes; the TUAB/TUEV tasks encode EDF loading, filter/notch/resampling, fixed bipolar derivations, window/label construction, optional normalization, and optional STFT. Generic models consume the processed `SampleDataset`, while reusable layers expose lower-level tensor interfaces. Version-pinned TUAB/TUEV dataset source prepares metadata CSVs and can attempt writes below the supplied root before falling back to a user cache.
+- **Limits:** These adapters and task defaults are executable implementation assumptions, not primary dataset evidence or universally valid preprocessing. Dataset construction and `set_task()` are not read-only inspection operations; cache and metadata destinations must be audited. Because processors are fit during `set_task()`, any data-adaptive processor must respect the declared training partition. PyHealth's generic healthcare models are not automatically validated EEG decoders, and the exact 2.0.1 dependency stack should be isolated from incompatible project environments.
+
+<a id="s54"></a>
+## S54 — TUH EEG authorized rsync access
+
+- **Type / class:** Official current provider access documentation; `SOFTWARE_CONTRACT`.
+- **Source:** Neural Engineering Data Consortium. *Temple University EEG Corpus — Downloads*. [Official access and rsync instructions](https://isip.piconepress.com/projects/nedc/html/tuh_eeg/index.shtml), [official access-request form](https://isip.piconepress.com/projects/nedc/forms/tuh_eeg.pdf).
+- **Supports:** As of January 2026, the provider requires an accepted access request, supplies account/credential instructions separately, registers an SSH key, and distributes released TUH EEG corpora through `rsync` over SSH. The provider publishes a small test path, recommends testing it before a full corpus transfer, requires link following because corpus subsets link back to TUEG, and publishes versioned rsync paths for TUEG and subsets including TUAB and TUEV.
+- **Limits:** Approval, credentials, hostnames, release paths, and transfer instructions can change; re-check the provider record at execution time. Provider support for `rsync` does not prove that a compute environment permits outbound SSH, has adequate durable storage, or completed a background transfer. Never expose a private key or credential in a repository, command log, provenance ledger, cache, or generated report.

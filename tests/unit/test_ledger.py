@@ -29,7 +29,9 @@ def test_template_matches_json_schema_and_project_invariants() -> None:
 
 def test_derivative_inside_source_is_rejected() -> None:
     ledger = _template()
-    ledger["outputs"][0]["path"] = "X:/archive/ds-example/derivatives/intake-report.json"
+    ledger["outputs"][0]["path"] = (
+        "/path/to/protected-source/ds-example/derivatives/intake-report.json"
+    )
     errors = validate_ledger(ledger)
     assert any("inside source_root" in error for error in errors)
 

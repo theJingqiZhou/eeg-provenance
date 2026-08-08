@@ -1,11 +1,13 @@
 # MNE-Python recipes
 
-These recipes are software contracts exercised in the project validation environment against MNE 1.12.1, MNE-BIDS 0.19.0, MNE-ICALabel 0.8.1, and AutoReject 0.4.4; they are not scientific defaults. Record actual versions in every ledger. [[S14]](evidence-register.md#s14) [[S15]](evidence-register.md#s15) [[S17]](evidence-register.md#s17) [[S26]](evidence-register.md#s26)
+These recipes are software contracts exercised in the project validation environment against MNE 1.12.1 with its `hdf5` extra, MNE-BIDS 0.19.0, MNE-ICALabel 0.8.1, and AutoReject 0.4.4; they are not scientific defaults. Record actual versions in every ledger. [[S14]](evidence-register.md#s14) [[S15]](evidence-register.md#s15) [[S17]](evidence-register.md#s17) [[S26]](evidence-register.md#s26) [[S49]](evidence-register.md#s49)
 
 ## Contents
 
 - [Environment and version capture](#environment-and-version-capture)
 - [Read BIDS without preloading](#read-bids-without-preloading)
+- [Read one non-BIDS container without preloading](#read-one-non-bids-container-without-preloading)
+- [Route MATLAB MAT files by version](#route-matlab-mat-files-by-version)
 - [Convert annotations to events](#convert-annotations-to-events)
 - [Filter with an explicit effective design](#filter-with-an-explicit-effective-design)
 - [Resample signal and events together](#resample-signal-and-events-together)
@@ -21,7 +23,15 @@ import importlib.metadata as md
 
 versions = {
     name: md.version(name)
-    for name in ("mne", "mne-bids", "mne-icalabel", "autoreject")
+    for name in (
+        "mne",
+        "mne-bids",
+        "mne-icalabel",
+        "autoreject",
+        "h5io",
+        "h5py",
+        "pymatreader",
+    )
 }
 ```
 
@@ -45,6 +55,83 @@ raw = read_raw_bids(bids_path, extra_params={"preload": False}, verbose=False)
 `read_raw_bids` applies supported BIDS sidecar metadata to `Raw`, but still compare `raw.info`, annotations, and channel locations with the intake report and preserve warnings. [[S01]](evidence-register.md#s01) [[S26]](evidence-register.md#s26)
 
 For annex-managed data, resolve availability through archive policy and read the immutable object only when authorized. Do not use a test recipe to fetch, unlock, drop, or rewrite annex objects; this is local policy enforcing the source/derivative separation. [[S05]](evidence-register.md#s05) [[S23]](evidence-register.md#s23)
+
+## Read one non-BIDS container without preloading
+
+```python
+import mne
+
+edf = mne.io.read_raw_edf(
+    selected_edf,
+    preload=False,
+    infer_types=False,
+    verbose="ERROR",
+)
+gdf = mne.io.read_raw_gdf(
+    selected_gdf,
+    preload=False,
+    verbose="ERROR",
+)
+eeglab = mne.io.read_raw_eeglab(
+    selected_set,
+    preload=False,
+    verbose="ERROR",
+)
+```
+
+Call only the reader matching the selected file. Record `raw.info`, `raw.ch_names`, reader channel types, annotations, warnings, and `raw.preload`; do not call `load_data()` during header-level intake. [[S27]](evidence-register.md#s27) [[S43]](evidence-register.md#s43)
+
+Treat generated names, inferred types, a recording-wide sampling rate, and annotation descriptions as reader observations. Reconcile them with the versioned dataset protocol and use PyEDFlib when native EDF per-signal header fields must remain visible. [[S03]](evidence-register.md#s03) [[S42]](evidence-register.md#s42) [[S43]](evidence-register.md#s43) [[S46]](evidence-register.md#s46)
+
+## Route MATLAB MAT files by version
+
+Install the tested HDF5 route with `pip install "mne[hdf5]==1.12.1"` or the locked project environment. In MNE 1.12.1 this extra supplies `h5io` and `pymatreader`, with `h5py` supplied transitively; the project exercise resolved h5io 0.2.5, h5py 3.16.0, and pymatreader 1.2.3. [[S49]](evidence-register.md#s49)
+
+Use SciPy `whosmat`/`loadmat` only for MAT v4 through v7.2. SciPy explicitly does not implement the HDF5/v7.3 interface, so a v7.3 failure is a routing decision rather than evidence that MATLAB is required. [[S43]](evidence-register.md#s43) [[S49]](evidence-register.md#s49)
+
+For a v7.3 file, inventory the HDF5 hierarchy without reading dataset values:
+
+```python
+from pathlib import Path
+
+import h5py
+
+mat_path = Path(selected_mat)
+if not h5py.is_hdf5(mat_path):
+    raise ValueError("Route this file to scipy.io.whosmat/loadmat")
+
+inventory = []
+with h5py.File(mat_path, "r") as handle:
+    def note(name, obj):
+        if isinstance(obj, h5py.Dataset):
+            inventory.append(
+                {
+                    "name": name,
+                    "shape": obj.shape,
+                    "dtype": str(obj.dtype),
+                    "attributes": sorted(obj.attrs),
+                }
+            )
+
+    handle.visititems(note)
+```
+
+Do not index datasets during this metadata pass: MATLAB cells and structs can use object references, and shapes, attributes, or names do not establish EEG axes, units, labels, or prior processing. Resolve those semantics from the release contract before selecting variables. [[S03]](evidence-register.md#s03) [[S39]](evidence-register.md#s39) [[S49]](evidence-register.md#s49)
+
+After the adaptation record identifies the required variables, use pymatreader's bounded variable selection:
+
+```python
+from pymatreader import read_mat
+
+selected = read_mat(
+    selected_mat,
+    variable_names=["signal", "sampling_frequency", "channel_labels"],
+)
+```
+
+Replace the example names with documented variables and record the returned types and shapes. Pymatreader converts MATLAB primitives, matrices, cells, and structs to Python representations; successful conversion does not validate the dataset-specific axis or label contract. [[S39]](evidence-register.md#s39) [[S49]](evidence-register.md#s49)
+
+Use `mne.io.read_raw_eeglab()` only for an EEGLAB `.set` contract and MNE's format-specific readers only for their documented formats. The presence of HDF5 or a `.mat` suffix does not make an arbitrary v7.3 structure an EEGLAB or MNE object, and `h5io` is not a generic MATLAB semantic parser. [[S27]](evidence-register.md#s27) [[S43]](evidence-register.md#s43) [[S49]](evidence-register.md#s49)
 
 ## Convert annotations to events
 
@@ -152,4 +239,4 @@ if derivative_root == source_root or source_root in derivative_root.parents:
     raise ValueError("Derivative root must be outside the source dataset")
 ```
 
-Use a BIDS-derivatives-compatible destination where applicable and record source/derivative relationships without claiming BEP028 conformance. [[S23]](evidence-register.md#s23)
+When claiming BIDS Derivatives compatibility, create the derivative dataset description, avoid a raw-filename collision with an appropriate entity such as `desc-<label>`, propagate required metadata that remain valid, and record immediate inputs in `Sources` using BIDS URIs. Otherwise label the output as a project derivative without a BIDS conformance claim. [[S23]](evidence-register.md#s23)

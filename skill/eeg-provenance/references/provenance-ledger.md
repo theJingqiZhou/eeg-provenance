@@ -1,6 +1,6 @@
 # Provenance ledger
 
-The ledger records an auditable processing graph using W3C PROV’s Entity–Activity–Agent pattern. The JSON schema is project-specific and does not claim PROV-O, BIDS Derivatives, or proposed BIDS-Prov conformance. [[S05]](evidence-register.md#s05) [[S23]](evidence-register.md#s23)
+The ledger records an auditable processing graph using W3C PROV’s Entity–Activity–Agent pattern. The JSON schema is project-specific and does not claim PROV-O conformance. A BIDS derivative must independently satisfy its dataset, filename, sidecar, inheritance, and source-link requirements. [[S05]](evidence-register.md#s05) [[S23]](evidence-register.md#s23)
 
 ## Identity and source entities
 
@@ -22,11 +22,15 @@ Use `fit_scope="none"` for fixed transforms with no estimated state, `training_o
 
 When an activity changes channel representation, include every state transition and rank estimate. Rereferencing, virtual-channel construction, dropping, and interpolation can alter dependence and spatial meaning. [[S07]](evidence-register.md#s07) [[S08]](evidence-register.md#s08)
 
+For remote execution, represent capability preflight, source retrieval, source verification, preprocessing batches, durable cache publication, and final cache verification as distinct activities. Put runtime/image identity, ephemeral and persistent roots, selected remote and object identities, network/tool probes, resume state, and publication verification under each activity's `parameters`; a successful scheduler or notebook state is not evidence that those stages completed. [[S05]](evidence-register.md#s05) [[S50]](evidence-register.md#s50)
+
 ## QC and outputs
 
 Record retained duration/epochs, rejected spans, bad/interpolated/dropped channels, event count/sample changes, sampling-rate changes, filter-response evidence, component/reconstruction diagnostics, rank changes, and sensitivity branches appropriate to the contract. Reporting both intervention and consequence supports evaluation; plausible choices can change results. [[S03]](evidence-register.md#s03) [[S19]](evidence-register.md#s19)
 
-For every output, record path/URI, media type, bytes, checksum, source entity, generating activity, and BIDS-derivative identifiers when used. Keep the output root outside the source tree. [[S05]](evidence-register.md#s05) [[S23]](evidence-register.md#s23)
+For every output, record path/URI, media type, bytes, checksum, source entity, generating activity, and BIDS-derivative identifiers when used. For a BIDS derivative, also record the derivative dataset identity, `GeneratedBy`, `SourceDatasets`/`DatasetLinks`, and immediate file `Sources`. Keep the output root outside the protected source tree. [[S05]](evidence-register.md#s05) [[S23]](evidence-register.md#s23)
+
+For a persistent remote cache, record its durable storage URI or object identity in addition to the runtime mount path, plus the cache identity, expected shard set, record index, per-shard checksums, completion state, and independent reopen result. Keep mutable progress state distinguishable from immutable verified payload identities. [[S05]](evidence-register.md#s05) [[S50]](evidence-register.md#s50)
 
 ## Limitations
 
