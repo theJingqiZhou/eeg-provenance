@@ -7,15 +7,20 @@ from jsonschema import Draft202012Validator
 from scripts.validate_ledger import validate_ledger
 
 
-ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SKILL_ROOT = REPO_ROOT / "skill" / "eeg-provenance"
 
 
 def _template() -> dict:
-    return json.loads((ROOT / "assets" / "provenance-ledger.template.json").read_text(encoding="utf-8"))
+    return json.loads(
+        (SKILL_ROOT / "assets" / "provenance-ledger.template.json").read_text(encoding="utf-8")
+    )
 
 
 def test_template_matches_json_schema_and_project_invariants() -> None:
-    schema = json.loads((ROOT / "assets" / "provenance-ledger.schema.json").read_text(encoding="utf-8"))
+    schema = json.loads(
+        (SKILL_ROOT / "assets" / "provenance-ledger.schema.json").read_text(encoding="utf-8")
+    )
     Draft202012Validator.check_schema(schema)
     errors = sorted(Draft202012Validator(schema).iter_errors(_template()), key=lambda error: list(error.path))
     assert errors == []

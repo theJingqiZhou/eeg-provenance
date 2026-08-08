@@ -22,7 +22,7 @@ validation = [
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = [".", "skill/eeg-provenance"]
 markers = [
     "archive: read-only tests against an optional external EEG archive",
     "eegdash: tests requiring the pinned EEGDash dependency group",

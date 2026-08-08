@@ -14,8 +14,10 @@ jobs:
           python-version: "3.12"
           enable-cache: true
       - run: uv sync --group validation --locked
-      - run: uv run python scripts/audit_citations.py
-      - run: uv run python scripts/validate_ledger.py assets/provenance-ledger.template.json
+      - run: uv run python tools/audit_citations.py
+      - run: >-
+          uv run python skill/eeg-provenance/scripts/validate_ledger.py
+          skill/eeg-provenance/assets/provenance-ledger.template.json
       - run: uv run pytest -m "not archive and not eegdash and not network"
 
   eegdash-contract:

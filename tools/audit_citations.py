@@ -17,6 +17,7 @@ CLAIM_RE = re.compile(
     r"electrode|rank|event|sampling|artifact|provenance|BIDS|EEG|MNE|EEGLAB|ICA|ASR)\b",
     re.IGNORECASE,
 )
+DEFAULT_SKILL_ROOT = Path(__file__).resolve().parents[1] / "skill" / "eeg-provenance"
 
 
 def _scientific_lines(path: Path) -> list[tuple[int, str]]:
@@ -36,6 +37,8 @@ def _scientific_lines(path: Path) -> list[tuple[int, str]]:
             in_fence = not in_fence
             continue
         if in_fence or not stripped or stripped.startswith(("#", "<!--")):
+            continue
+        if re.fullmatch(r"- \[[^\]]+\]\([^)]+\)", stripped):
             continue
         if stripped.startswith(("Use [", "- Use [")):
             continue
@@ -90,7 +93,7 @@ def audit(root: Path) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--root", type=Path, default=DEFAULT_SKILL_ROOT)
     args = parser.parse_args(argv)
     errors = audit(args.root.resolve())
     if errors:

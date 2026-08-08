@@ -2,6 +2,25 @@
 
 These instructions apply to the entire repository.
 
+## Repository layout
+
+Keep the installable skill under `skill/eeg-provenance/`. That folder
+must contain only the canonical skill entrypoint and resources:
+`SKILL.md`, `agents/`, `assets/`, `references/`, and `scripts/`.
+
+Keep repository-only material outside the skill package:
+
+- Put citation audits and executable integration verification in
+  `tools/`.
+- Put automated checks in `tests/` and forward-test cases in `evals/`.
+- Keep dependency locks, CI, legal files, and contribution policy at
+  the repository root.
+
+Bundle a script with the skill only when an agent needs it during
+normal EEG work. Keep maintainer validation harnesses in `tools/`.
+Reference files longer than 100 lines must include a table of contents,
+and every reference must be linked directly from `SKILL.md`.
+
 ## Commit philosophy
 
 Write commits as durable project history. A future reader should be
@@ -70,7 +89,7 @@ guidance without runtime behavior belongs to `docs`.
 
 Prefer a short scope naming the affected subsystem:
 
-- `skill`: `SKILL.md`, agent metadata, and top-level skill behavior.
+- `skill`: `skill/eeg-provenance/`, agent metadata, and skill behavior.
 - `evidence`: the evidence register and scientific guidance.
 - `provenance`: ledger schema, templates, and provenance semantics.
 - `eegdash`, `mne`, `eeglab`: source-specific tool integrations.

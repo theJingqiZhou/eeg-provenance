@@ -71,23 +71,8 @@ Record ICA training filters, reference, channels/order, rank, component count, a
 
 Do not remove components solely because a label wins the argmax; declare thresholds/rules and evaluate signal preservation against the endpoint. Artifact removal has not shown consistent decoding benefit across evaluated settings. [[S13]](evidence-register.md#s13) [[S18]](evidence-register.md#s18)
 
-## Verification harness
+## Verify the execution environment
 
-Run the repository harness with the official EEGLAB checkout and optional immutable SET payload. The harness writes its synthetic round trip only to MATLAB `tempdir` and never to the archive. [[S23]](evidence-register.md#s23) [[S24]](evidence-register.md#s24)
+Before accessing data through an available MATLAB integration, perform a harmless version query and confirm that the required EEGLAB and plugin functions resolve. Treat a missing or unverified integration as a design-only path rather than claiming that EEGLAB execution occurred. [[S24]](evidence-register.md#s24) [[S25]](evidence-register.md#s25) [[S30]](evidence-register.md#s30)
 
-```powershell
-matlab -batch "addpath('scripts'); verify_eeglab('.workbench/eeglab', 'X:/path/to/object.set')"
-```
-
-The harness verifies startup, plugin discovery, structural checks, synthetic save/load, and metadata-only loading of the optional real SET file. It does not validate a scientific cleaning pipeline. [[S24]](evidence-register.md#s24) [[S25]](evidence-register.md#s25)
-
-## Verify the Codex-to-MATLAB transport
-
-Register the installed server with the absolute MATLAB root, then start a new Codex session so the MCP configuration is reloaded. Verify the transport with an actual initialize, tool-list, and harmless evaluation rather than relying only on executable discovery. [[S30]](evidence-register.md#s30)
-
-```powershell
-codex mcp add matlab -- <matlab-mcp-server> --matlab-root <MATLAB-root> --matlab-session-mode auto
-uv run python scripts/verify_matlab_mcp.py --server <matlab-mcp-server> --matlab-root <MATLAB-root>
-```
-
-Record the MCP server version, negotiated protocol, exposed tool names, MATLAB version, session mode, and telemetry setting. These are versioned software facts, not properties of the EEG data. [[S30]](evidence-register.md#s30)
+Record the integration/server version, exposed tool names, MATLAB version, EEGLAB and plugin versions, session mode, and telemetry setting when available. These are versioned software facts, not properties of the EEG data. [[S24]](evidence-register.md#s24) [[S30]](evidence-register.md#s30)

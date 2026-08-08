@@ -77,7 +77,7 @@ Tag important decisions with one of these evidence classes and cite an evidence-
 - `SOFTWARE_CONTRACT`: behavior documented for a named software version; record the actual version used. [[S14]](references/evidence-register.md#s14) [[S24]](references/evidence-register.md#s24)
 - `LOCAL_POLICY`: a conservative project safeguard; label it as policy and cite the risk it controls. [[S20]](references/evidence-register.md#s20) [[S23]](references/evidence-register.md#s23)
 
-Use [references/evidence-register.md](references/evidence-register.md) as the sole claim-source registry. If a necessary claim is absent, verify a primary or official source, add an entry with limitations, and run `python scripts/audit_citations.py` before presenting the claim.
+Use [references/evidence-register.md](references/evidence-register.md) as the sole claim-source registry. If a necessary claim is absent, report the evidence gap and stop short of presenting the claim as supported; do not invent a source or silently extend the registry. [[S03]](references/evidence-register.md#s03)
 
 ## Tool routing
 
@@ -86,8 +86,6 @@ Use [references/evidence-register.md](references/evidence-register.md) as the so
 - Use [references/tool-recipes-eegdash.md](references/tool-recipes-eegdash.md) for metadata-first queries, bounded OpenNeuro acquisition, NeMAR annex retrieval, offline loading, and descriptive QC. [[S31]](references/evidence-register.md#s31)
 - Run `scripts/inspect_bids_metadata.py DATASET_ROOT` for a read-only metadata inventory.
 - Run `scripts/eegdash_intake.py --help` for guarded catalogue, one-recording download, and offline-QC modes. [[S31]](references/evidence-register.md#s31)
-- Run `scripts/verify_mne_recipes.py` or `scripts/verify_eeglab.m` when validating the executable examples.
-- Run `scripts/verify_matlab_mcp.py` when validating an optional Codex-to-MATLAB MCP connection. [[S30]](references/evidence-register.md#s30)
 
 ## Stop conditions
 

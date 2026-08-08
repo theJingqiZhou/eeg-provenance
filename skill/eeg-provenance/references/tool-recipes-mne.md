@@ -1,14 +1,20 @@
 # MNE-Python recipes
 
-These recipes are software contracts for the tested environment, not scientific defaults. The repository lock resolves MNE 1.12.1, MNE-BIDS 0.19.0, MNE-ICALabel 0.8.1, and AutoReject 0.4.4; record actual versions in every ledger. [[S14]](evidence-register.md#s14) [[S15]](evidence-register.md#s15) [[S17]](evidence-register.md#s17) [[S26]](evidence-register.md#s26)
+These recipes are software contracts exercised in the project validation environment against MNE 1.12.1, MNE-BIDS 0.19.0, MNE-ICALabel 0.8.1, and AutoReject 0.4.4; they are not scientific defaults. Record actual versions in every ledger. [[S14]](evidence-register.md#s14) [[S15]](evidence-register.md#s15) [[S17]](evidence-register.md#s17) [[S26]](evidence-register.md#s26)
+
+## Contents
+
+- [Environment and version capture](#environment-and-version-capture)
+- [Read BIDS without preloading](#read-bids-without-preloading)
+- [Convert annotations to events](#convert-annotations-to-events)
+- [Filter with an explicit effective design](#filter-with-an-explicit-effective-design)
+- [Resample signal and events together](#resample-signal-and-events-together)
+- [Reference and rank](#reference-and-rank)
+- [Interpolate marked bad channels](#interpolate-marked-bad-channels)
+- [Fit and apply ICA](#fit-and-apply-ica)
+- [Safe derivative write](#safe-derivative-write)
 
 ## Environment and version capture
-
-```bash
-uv python install 3.12
-uv sync --group validation
-uv run python scripts/verify_mne_recipes.py
-```
 
 ```python
 import importlib.metadata as md

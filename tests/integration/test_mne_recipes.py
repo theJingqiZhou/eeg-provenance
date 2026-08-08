@@ -5,7 +5,7 @@ from pathlib import Path
 import mne
 import pytest
 
-from scripts.verify_mne_recipes import run_verification
+from tools.verify_mne_recipes import run_verification
 
 
 def test_synthetic_mne_recipe_contract() -> None:

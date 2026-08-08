@@ -2,6 +2,15 @@
 
 This register is the only source namespace used by the skill. “Supports” describes the narrow claim for which a source may be cited; it is not a summary of every conclusion in the source. “Limits” prevents a citation from being generalized beyond its design. URLs and identifiers were checked on 2026-08-08.
 
+## Contents
+
+- [Search and selection protocol](#search-and-selection-protocol)
+- [Evidence classes](#evidence-classes)
+- [Standards, reporting, and provenance (S01–S06)](#s01)
+- [Signal processing and artifacts (S07–S19)](#s07)
+- [Validation and leakage (S20–S22)](#s20)
+- [Software and dataset contracts (S23–S33)](#s23)
+
 ## Search and selection protocol
 
 This is a targeted scoping review for EEG intake, preprocessing decisions, channel/montage harmonization, leakage control, software behavior, dataset-specific provenance, and reproducibility. Searches covered PubMed, Crossref/DOI resolution, BIDS, W3C, MNE, MNE-BIDS, EEGLAB, EEGDash, OpenNeuro, NeMAR, and official project documentation. Representative queries included `EEG-BIDS specification reference electrodes channels`, `COBIDAS MEEG preprocessing reporting`, `EEG filter design artifacts`, `EEG interpolation spherical splines`, `EEG reference rank`, `EEG ICA high-pass`, `EEG preprocessing multiverse decoding`, `EEG cross-validation leakage`, `EEGDash metadata lazy cache`, `OpenNeuro ds003061`, and `NeMAR nm000166 M3CV`.
