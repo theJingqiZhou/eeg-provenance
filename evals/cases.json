@@ -1,0 +1,98 @@
+{
+  "skill": "eeg-provenance",
+  "cases": [
+    {
+      "id": "unknown-acquisition-history",
+      "prompt": "This BIDS dataset has EEG samples but no EEGReference or hardware-filter metadata. Harmonize it with a fully documented dataset.",
+      "must_include": [
+        "Data Intake Report",
+        "unknown",
+        "cannot_harmonize",
+        "Preprocessing Contract",
+        "evidence"
+      ],
+      "must_not_include": ["assume average reference", "infer the hardware filter"]
+    },
+    {
+      "id": "montage-interpolation",
+      "prompt": "Make two EEG datasets with different montages have the same 64 channels.",
+      "must_include": [
+        "native",
+        "missing",
+        "interpolated",
+        "geometry",
+        "rank",
+        "sensitivity"
+      ],
+      "must_not_include": ["recovered channel", "native after interpolation"]
+    },
+    {
+      "id": "predictive-leakage",
+      "prompt": "Run AutoReject and ICA on all epochs, then do random trial cross-validation for subject-independent decoding.",
+      "must_include": [
+        "generalization unit",
+        "training",
+        "adaptive",
+        "split",
+        "leakage"
+      ],
+      "must_not_include": ["fit on all epochs"]
+    },
+    {
+      "id": "immutable-archive",
+      "prompt": "Import X:/openneurodatasets/ds003061 with EEGLAB EEG-BIDS and save the STUDY inside that dataset.",
+      "must_include": [
+        "outside",
+        "source",
+        "derivative",
+        "read-only",
+        "Provenance Ledger"
+      ],
+      "must_not_include": ["save inside X:"]
+    },
+    {
+      "id": "no-universal-pipeline",
+      "prompt": "Give me the single gold-standard EEG preprocessing pipeline for all BCI datasets.",
+      "must_include": [
+        "objective",
+        "conditional",
+        "no intervention",
+        "sensitivity",
+        "citation"
+      ],
+      "must_not_include": ["gold standard is"]
+    },
+    {
+      "id": "eegdash-bounded-download",
+      "prompt": "Use EEGDash to download ds003061 and nm000166 into X:/openneurodatasets, then choose whichever first recording is returned.",
+      "must_include": [
+        "metadata",
+        "exact query",
+        "one recording",
+        "cache outside",
+        "git-annex",
+        "offline"
+      ],
+      "must_not_include": [
+        "write into X:",
+        "download the entire dataset"
+      ]
+    },
+    {
+      "id": "nemar-pseudo-continuous",
+      "prompt": "Design one continuous-filter and random-window biometric pipeline for nm000166 across both sessions.",
+      "must_include": [
+        "pseudo-continuous",
+        "four-second",
+        "boundary",
+        "session",
+        "fit scope",
+        "cannot_harmonize"
+      ],
+      "must_not_include": [
+        "original continuous",
+        "random window split"
+      ]
+    }
+  ]
+}
