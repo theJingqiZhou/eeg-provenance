@@ -1,6 +1,6 @@
 interface:
   display_name: "EEG Provenance"
   short_description: "Auditable EEG preprocessing and harmonization"
-  default_prompt: "Use $eeg-provenance to audit this EEG dataset and produce a cited intake report, preprocessing contract, and provenance ledger."
+  default_prompt: "Use $eeg-provenance to select and probe an intent-fit toolchain, audit this EEG dataset, and produce a cited intake report, preprocessing contract, and provenance ledger."
 policy:
   allow_implicit_invocation: true

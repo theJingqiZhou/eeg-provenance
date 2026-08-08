@@ -8,6 +8,8 @@ For non-BIDS EDF/GDF/MAT releases, use [non-bids-intake.md](non-bids-intake.md).
 
 ## Route by source contract
 
+Apply [toolchain-selection.md](toolchain-selection.md) before turning these source routes into commands. Choose separately for discovery, acquisition, conformance, metadata/native-header inspection, lazy signal representation, and later processing; user preferences rank only candidates that preserve the required source semantics and read/write boundary. [[S03]](evidence-register.md#s03) [[S05]](evidence-register.md#s05) [[S23]](evidence-register.md#s23)
+
 - Route a conforming BIDS dataset to the pinned BIDS workflow and resolve inheritance before judging recording-level fields. [[S01]](evidence-register.md#s01)
 - Route a documented legacy/project layout to the non-BIDS sufficiency gate; do not demand conversion to BIDS before learning the original release semantics. [[S03]](evidence-register.md#s03) [[S42]](evidence-register.md#s42)
 - If the layout is unfamiliar, search official portals, versioned release records, primary papers, codebooks, and conversion code, then use a generic header/array-directory inventory while semantic gaps remain explicit. Missing attachments do not excuse skipping this evidence search. [[S03]](evidence-register.md#s03) [[S06]](evidence-register.md#s06) [[S43]](evidence-register.md#s43)
@@ -46,7 +48,7 @@ Stop if a conflict affects units, channel type, sampling frequency, reference, c
 
 ## BIDS established-tool inspection
 
-Run the official BIDS Validator first and preserve its version, schema/specification target, command, configuration, JSON result, and dataset commit or snapshot. Use its Git-ref/annex options when appropriate instead of teaching local placeholder conventions as BIDS behavior. [[S01]](evidence-register.md#s01) [[S37]](evidence-register.md#s37) [[S47]](evidence-register.md#s47)
+When BIDS conformance is part of the current phase, select the official BIDS Validator and preserve its version, schema/specification target, command, configuration, JSON result, and dataset commit or snapshot. Use its Git-ref/annex options when the active release exposes them instead of teaching local placeholder conventions as BIDS behavior. [[S01]](evidence-register.md#s01) [[S37]](evidence-register.md#s37) [[S47]](evidence-register.md#s47)
 
 Use PyBIDS for in-memory indexing, entity queries, inherited JSON metadata, raw/derivative scopes, and subject-matched anatomy discovery. Use MNE-BIDS for the selected EEG recording with `preload=False`, then compare applied channel/event/coordinate metadata and warnings with the source sidecars. [[S01]](evidence-register.md#s01) [[S26]](evidence-register.md#s26) [[S48]](evidence-register.md#s48)
 
@@ -56,7 +58,7 @@ Follow [tool-recipes-bids.md](tool-recipes-bids.md) for commands and role bounda
 
 ## Non-BIDS established-tool inspection
 
-Select established tools by container and dataset ecosystem, constrain them to one explicit recording, disable preloading or sample retrieval where supported, and inspect exact companion metadata separately. A library parser supplies observations, while the adaptation record supplies version-matched meaning. [[S03]](evidence-register.md#s03) [[S42]](evidence-register.md#s42) [[S43]](evidence-register.md#s43)
+Select established tools by phase intent, container, dataset ecosystem, required metadata fidelity, side effects, and downstream representation; constrain them to one explicit recording, disable preloading or sample retrieval where supported, and inspect exact companion metadata separately. A library parser supplies observations, while the adaptation record supplies version-matched meaning. [[S03]](evidence-register.md#s03) [[S42]](evidence-register.md#s42) [[S43]](evidence-register.md#s43)
 
 Use MNE-Python for lazy EDF/GDF/EEGLAB reads and annotations, PyEDFlib when the native EDF per-signal header must be preserved, SciPy for MAT v4–v7.2, and the MNE `hdf5` extra's pymatreader route for MATLAB v7.3 when MATLAB is unavailable. Use EEGLAB for a validated MATLAB/BIOSIG import route. Consult EEGDash, MOABB, TorchEEG, Braindecode, and PyHealth before writing a new adapter, but audit their versioned assumptions and write/cache behavior against the local release before execution. Braindecode and PyHealth belong after the read-only intake gate when their preprocessing, task, windowing, processor, or model-ready cache machinery is needed. [[S24]](evidence-register.md#s24) [[S31]](evidence-register.md#s31) [[S43]](evidence-register.md#s43) [[S44]](evidence-register.md#s44) [[S45]](evidence-register.md#s45) [[S46]](evidence-register.md#s46) [[S49]](evidence-register.md#s49) [[S52]](evidence-register.md#s52) [[S53]](evidence-register.md#s53)
 
