@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.2.0",
+  "schema_version": "2.0.0",
   "ledger_id": "eegprov-example-001",
   "created_at": "2026-08-08T12:00:00Z",
   "dataset": {
@@ -8,6 +8,8 @@
     "bids_version": "1.11.1",
     "source_root": "/path/to/protected-source/ds-example",
     "source_uri": "https://example.org/datasets/ds-example",
+    "protected_source_tree": true,
+    "authorized_output_roots": ["C:/derivatives/ds-example"],
     "recordings": [
       {
         "id": "sub-001_task-example_run-1",
@@ -152,7 +154,14 @@
       "parameters": {
         "signal_payload_read": false
       },
-      "fit_scope": "none",
+      "fit_scope": {
+        "population": "not_applicable",
+        "uses_labels": false,
+        "uses_target_distribution": false,
+        "fit_unit": "none",
+        "deployment_available": null,
+        "state_reused_on": []
+      },
       "input_entities": ["entity-raw-001"],
       "output_entities": ["entity-intake-report-001"],
       "channel_effect": "none",
@@ -167,11 +176,45 @@
     }
   ],
   "qc": {
-    "retained_duration_fraction": 1.0,
-    "channel_state_transitions": [],
-    "event_count_before": 120,
-    "event_count_after": 120,
-    "notes": "Replace template values with executed diagnostics"
+    "status": "pass",
+    "observations": [
+      {
+        "metric": "non_finite_sample_count",
+        "scope": "entity-intake-report-001",
+        "value": 0,
+        "unit": "samples",
+        "status": "within_contract"
+      }
+    ],
+    "retention": {
+      "duration_fraction": 1.0,
+      "epoch_fraction": null,
+      "sample_fraction": 1.0,
+      "reason_counts": {}
+    },
+    "shape_transition": {
+      "before": [64, 120000],
+      "after": [64, 120000]
+    },
+    "sampling_transition": {
+      "before_hz": 500.0,
+      "after_hz": 500.0
+    },
+    "channel_transitions": [],
+    "event_transition": {
+      "before_count": 120,
+      "after_count": 120,
+      "max_abs_shift_s": 0.0
+    },
+    "rank_transition": {
+      "before": 64,
+      "after": 64,
+      "method": "channel count; replace with an estimated-rank method when required"
+    },
+    "warnings": [],
+    "operation_specific": {
+      "notes": "Replace template values with executed diagnostics"
+    }
   },
   "outputs": [
     {

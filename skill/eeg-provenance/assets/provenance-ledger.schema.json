@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.org/eeg-provenance/provenance-ledger.schema.json",
+  "$id": "https://raw.githubusercontent.com/theJingqiZhou/eeg-provenance/main/skill/eeg-provenance/assets/provenance-ledger.schema.json",
   "title": "EEG Provenance Ledger",
   "type": "object",
   "additionalProperties": false,
@@ -18,7 +18,7 @@
     "limitations"
   ],
   "properties": {
-    "schema_version": {"const": "1.2.0"},
+    "schema_version": {"const": "2.0.0"},
     "ledger_id": {"type": "string", "minLength": 1},
     "created_at": {"type": "string", "format": "date-time"},
     "dataset": {"$ref": "#/$defs/dataset"},
@@ -29,7 +29,7 @@
       "type": "array",
       "items": {"$ref": "#/$defs/activity"}
     },
-    "qc": {"type": "object"},
+    "qc": {"$ref": "#/$defs/qc"},
     "outputs": {
       "type": "array",
       "items": {"$ref": "#/$defs/output"}
@@ -49,13 +49,20 @@
     "dataset": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["dataset_id", "dataset_version", "source_root", "source_uri", "recordings", "acquisition_history"],
+      "required": ["dataset_id", "dataset_version", "source_root", "source_uri", "protected_source_tree", "authorized_output_roots", "recordings", "acquisition_history"],
       "properties": {
         "dataset_id": {"type": "string", "minLength": 1},
         "dataset_version": {"type": "string", "minLength": 1},
         "bids_version": {"type": ["string", "null"]},
         "source_root": {"type": "string", "minLength": 1},
         "source_uri": {"type": "string", "minLength": 1},
+        "protected_source_tree": {"type": "boolean"},
+        "authorized_output_roots": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
         "recordings": {
           "type": "array",
           "minItems": 1,
@@ -268,6 +275,23 @@
         "validation": {"type": "string", "minLength": 1}
       }
     },
+    "fitScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["population", "uses_labels", "uses_target_distribution", "fit_unit", "deployment_available", "state_reused_on"],
+      "properties": {
+        "population": {"type": "string", "minLength": 1},
+        "uses_labels": {"type": "boolean"},
+        "uses_target_distribution": {"type": "boolean"},
+        "fit_unit": {"type": "string", "minLength": 1},
+        "deployment_available": {"type": ["boolean", "null"]},
+        "state_reused_on": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
     "activity": {
       "type": "object",
       "additionalProperties": false,
@@ -290,7 +314,7 @@
           }
         },
         "parameters": {"type": "object"},
-        "fit_scope": {"enum": ["none", "training_only", "within_train_fold", "all_data_declared"]},
+        "fit_scope": {"$ref": "#/$defs/fitScope"},
         "input_entities": {"type": "array", "minItems": 1, "items": {"type": "string"}},
         "output_entities": {"type": "array", "minItems": 1, "items": {"type": "string"}},
         "channel_effect": {"enum": ["none", "rename", "unit_convert", "mark_bad", "drop", "interpolate", "rereference", "virtual"]},
@@ -311,6 +335,102 @@
         "reference_before": {"type": ["string", "null"]},
         "reference_after": {"type": ["string", "null"]},
         "evidence_ids": {"$ref": "#/$defs/evidenceIds"}
+      }
+    },
+    "qcObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric", "scope", "value", "unit", "status"],
+      "properties": {
+        "metric": {"type": "string", "minLength": 1},
+        "scope": {"type": "string", "minLength": 1},
+        "value": {},
+        "unit": {"type": ["string", "null"]},
+        "status": {"enum": ["descriptive", "within_contract", "warning", "failed"]}
+      }
+    },
+    "qc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "observations", "retention", "shape_transition", "sampling_transition", "channel_transitions", "event_transition", "rank_transition", "warnings", "operation_specific"],
+      "properties": {
+        "status": {"enum": ["pass", "pass_with_warnings", "fail", "not_assessed"]},
+        "observations": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/qcObservation"}
+        },
+        "retention": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["duration_fraction", "epoch_fraction", "sample_fraction", "reason_counts"],
+          "properties": {
+            "duration_fraction": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+            "epoch_fraction": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+            "sample_fraction": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+            "reason_counts": {
+              "type": "object",
+              "additionalProperties": {"type": "integer", "minimum": 0}
+            }
+          }
+        },
+        "shape_transition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["before", "after"],
+          "properties": {
+            "before": {"type": ["array", "null"], "items": {"type": "integer", "minimum": 0}},
+            "after": {"type": ["array", "null"], "items": {"type": "integer", "minimum": 0}}
+          }
+        },
+        "sampling_transition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["before_hz", "after_hz"],
+          "properties": {
+            "before_hz": {"type": ["number", "null"], "exclusiveMinimum": 0},
+            "after_hz": {"type": ["number", "null"], "exclusiveMinimum": 0}
+          }
+        },
+        "channel_transitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["channel", "from", "to", "reason"],
+            "properties": {
+              "channel": {"type": "string", "minLength": 1},
+              "from": {"type": "string", "minLength": 1},
+              "to": {"type": "string", "minLength": 1},
+              "reason": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "event_transition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["before_count", "after_count", "max_abs_shift_s"],
+          "properties": {
+            "before_count": {"type": ["integer", "null"], "minimum": 0},
+            "after_count": {"type": ["integer", "null"], "minimum": 0},
+            "max_abs_shift_s": {"type": ["number", "null"], "minimum": 0}
+          }
+        },
+        "rank_transition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["before", "after", "method"],
+          "properties": {
+            "before": {"type": ["integer", "null"], "minimum": 0},
+            "after": {"type": ["integer", "null"], "minimum": 0},
+            "method": {"type": ["string", "null"], "minLength": 1}
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "operation_specific": {"type": "object"}
       }
     },
     "output": {

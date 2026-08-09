@@ -7,25 +7,27 @@ import argparse
 import json
 import re
 import sys
+from collections.abc import Iterable
 from pathlib import Path, PurePosixPath
-from typing import Any, Iterable
+from typing import Any
 
 try:
     import rfc3339_validator
     from jsonschema import Draft202012Validator, FormatChecker
+    from jsonschema.exceptions import SchemaError
 except ModuleNotFoundError:  # pragma: no cover - exercised only outside validation env
     rfc3339_validator = None  # type: ignore[assignment]
     Draft202012Validator = None  # type: ignore[assignment,misc]
     FormatChecker = None  # type: ignore[assignment,misc]
+    SchemaError = Exception  # type: ignore[assignment,misc]
 
 
-SCHEMA_VERSION = "1.2.0"
+SCHEMA_VERSION = "2.0.0"
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = SKILL_ROOT / "assets" / "provenance-ledger.schema.json"
 EVIDENCE_REGISTER = SKILL_ROOT / "references" / "evidence-register.md"
 EVIDENCE_ANCHOR_RE = re.compile(r'<a id="(s\d{2})"></a>', re.IGNORECASE)
 RANK_EFFECTS = {"drop", "interpolate", "rereference", "virtual"}
-TRAINING_SCOPES = {"training_only", "within_train_fold"}
 
 
 def _json_path(parts: Iterable[Any]) -> str:
@@ -44,16 +46,28 @@ def validate_schema(data: Any) -> list[str]:
         or rfc3339_validator is None
     ):
         return [
-            "schema validation unavailable: install jsonschema>=4.25 and "
-            "rfc3339-validator>=0.1.4 before running validate_ledger.py"
+            (
+                "schema validation unavailable: install jsonschema>=4.25 and "
+                "rfc3339-validator>=0.1.4 before running validate_ledger.py"
+            )
         ]
     try:
         schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         return [f"schema load failed: {exc}"]
+    declared_version = schema.get("properties", {}).get("schema_version", {}).get(
+        "const"
+    )
+    if declared_version != SCHEMA_VERSION:
+        return [
+            (
+                f"schema version mismatch: validator={SCHEMA_VERSION}, "
+                f"schema={declared_version!r}"
+            )
+        ]
     try:
         Draft202012Validator.check_schema(schema)
-    except Exception as exc:  # jsonschema raises a detailed SchemaError
+    except SchemaError as exc:
         return [f"schema definition invalid: {exc}"]
     format_checker = FormatChecker()
     format_checker.checks("date-time", raises=Exception)(
@@ -113,6 +127,14 @@ def validate_semantics(ledger: dict[str, Any]) -> list[str]:
 
     dataset = ledger["dataset"]
     source_root = dataset["source_root"]
+    protected_source_tree = dataset["protected_source_tree"]
+    authorized_output_roots = dataset["authorized_output_roots"]
+    for index, output_root in enumerate(authorized_output_roots):
+        path = f"$.dataset.authorized_output_roots[{index}]"
+        if _is_within(source_root, output_root):
+            errors.append(f"{path}: authorized root must not contain source_root")
+        if protected_source_tree and _is_within(output_root, source_root):
+            errors.append(f"{path}: protected source tree cannot authorize internal writes")
     recording_ids: set[str] = set()
     for index, recording in enumerate(dataset["recordings"]):
         _record_unique(
@@ -246,10 +268,40 @@ def validate_semantics(ledger: dict[str, Any]) -> list[str]:
             errors.append(
                 f"{path}.rank: required for channel effect {activity['channel_effect']!r}"
             )
-        if evaluation_mode == "predictive" and activity["adaptive"]:
-            if activity["fit_scope"] not in TRAINING_SCOPES:
+        fit_scope = activity["fit_scope"]
+        if activity["adaptive"]:
+            if fit_scope["population"].casefold() == "not_applicable":
                 errors.append(
-                    f"{path}.fit_scope: adaptive predictive activity must be training-only"
+                    f"{path}.fit_scope.population: adaptive activity needs a fitted population"
+                )
+            if fit_scope["fit_unit"].casefold() == "none":
+                errors.append(
+                    f"{path}.fit_scope.fit_unit: adaptive activity needs a fit unit"
+                )
+            if not fit_scope["state_reused_on"]:
+                errors.append(
+                    f"{path}.fit_scope.state_reused_on: adaptive state needs an application scope"
+                )
+            if (
+                evaluation_mode == "predictive"
+                and fit_scope["deployment_available"] is not True
+            ):
+                errors.append(
+                    f"{path}.fit_scope.deployment_available: predictive adaptive "
+                    "state must use information available and authorized before prediction"
+                )
+        else:
+            if fit_scope != {
+                "population": "not_applicable",
+                "uses_labels": False,
+                "uses_target_distribution": False,
+                "fit_unit": "none",
+                "deployment_available": None,
+                "state_reused_on": [],
+            }:
+                errors.append(
+                    f"{path}.fit_scope: fixed activity must use the canonical "
+                    "non-adaptive scope"
                 )
         _check_registered_evidence(
             activity["evidence_ids"], f"{path}.evidence_ids", registered, errors
@@ -264,12 +316,31 @@ def validate_semantics(ledger: dict[str, Any]) -> list[str]:
     for index, output in enumerate(ledger["outputs"]):
         path = f"$.outputs[{index}]"
         _record_unique(output["id"], output_ids, f"{path}.id", "output ID", errors)
-        if _is_within(output["path"], source_root):
-            errors.append(f"{path}.path: derivative output is inside source_root")
+        if not any(
+            _is_within(output["path"], output_root)
+            for output_root in authorized_output_roots
+        ):
+            errors.append(f"{path}.path: output is outside authorized_output_roots")
+        if protected_source_tree and _is_within(output["path"], source_root):
+            errors.append(f"{path}.path: output is inside protected source_root")
         if output["source_entity"].casefold() not in entity_ids:
             errors.append(f"{path}.source_entity: unknown source input entity")
         if output["generating_activity"].casefold() not in activity_ids:
             errors.append(f"{path}.generating_activity: unknown activity")
+
+    qc = ledger["qc"]
+    qc_status = qc["status"]
+    observation_statuses = {item["status"] for item in qc["observations"]}
+    if qc_status == "pass" and (qc["warnings"] or "warning" in observation_statuses):
+        errors.append("$.qc.status: pass cannot contain warnings")
+    if qc_status == "pass_with_warnings" and not (
+        qc["warnings"] or "warning" in observation_statuses
+    ):
+        errors.append("$.qc.status: pass_with_warnings requires a warning")
+    if "failed" in observation_statuses and qc_status != "fail":
+        errors.append("$.qc.status: failed observations require fail status")
+    if qc_status == "fail" and "failed" not in observation_statuses:
+        errors.append("$.qc.status: fail requires a failed observation")
 
     for index, limitation in enumerate(ledger["limitations"]):
         _check_registered_evidence(
