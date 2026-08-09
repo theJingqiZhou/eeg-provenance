@@ -8,6 +8,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SKILL_ROOT = REPO_ROOT / "skill" / "eeg-provenance"
 MARKDOWN_LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 REFERENCE_LINK_RE = re.compile(r"\((references/[^)#]+\.md)(?:#[^)]+)?\)")
+LOCAL_REFERENCE_LINK_RE = re.compile(r"\(([^/)#]+\.md)(?:#[^)]+)?\)")
 
 
 def test_local_markdown_links_resolve() -> None:
@@ -59,14 +60,61 @@ def test_installable_skill_has_only_canonical_entries() -> None:
     assert not (REPO_ROOT / "scripts").exists()
 
 
-def test_every_reference_is_directly_discoverable() -> None:
+def _reference_graph() -> tuple[set[str], dict[str, set[str]]]:
     skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    linked = set(REFERENCE_LINK_RE.findall(skill_text))
-    expected = {
-        f"references/{path.name}"
-        for path in (SKILL_ROOT / "references").glob("*.md")
+    roots = {
+        Path(target).name
+        for target in REFERENCE_LINK_RE.findall(skill_text)
     }
-    assert linked == expected
+    graph: dict[str, set[str]] = {}
+    for path in (SKILL_ROOT / "references").glob("*.md"):
+        graph[path.name] = set(LOCAL_REFERENCE_LINK_RE.findall(
+            path.read_text(encoding="utf-8")
+        ))
+    return roots, graph
+
+
+def test_reference_graph_is_bounded_reachable_and_acyclic() -> None:
+    roots, graph = _reference_graph()
+    assert roots == set(graph), "Every reference must be linked directly from SKILL.md"
+
+    distance = {name: 1 for name in roots}
+    frontier = list(roots)
+    while frontier:
+        parent = frontier.pop(0)
+        for child in graph[parent]:
+            assert child in graph, f"unknown reference target: {parent} -> {child}"
+            if child not in distance:
+                distance[child] = distance[parent] + 1
+                frontier.append(child)
+    assert set(distance) == set(graph)
+    assert max(distance.values()) == 1
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(name: str) -> None:
+        assert name not in visiting, f"reference cycle reaches {name}"
+        if name in visited:
+            return
+        visiting.add(name)
+        for child in graph[name]:
+            visit(child)
+        visiting.remove(name)
+        visited.add(name)
+
+    for name in graph:
+        visit(name)
+
+
+def test_top_level_routes_have_explicit_activation_conditions() -> None:
+    skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    resource_map = skill_text.split("## Resource map", 1)[1].split(
+        "## Stop conditions", 1
+    )[0]
+    assert "Load only a resource whose condition is true" in resource_map
+    for target in REFERENCE_LINK_RE.findall(resource_map):
+        assert resource_map.count(f"]({target})") == 1
 
 
 def test_long_references_have_contents_navigation() -> None:

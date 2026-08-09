@@ -272,6 +272,70 @@
         "choose Python 3.16",
         "newest Python is preferred"
       ]
+    },
+    {
+      "id": "eeglab-study-is-not-bids-copy",
+      "prompt": "Import a BIDS dataset with EEG-BIDS, keep the STUDY as the byte-for-byte copy of all required BIDS metadata, and discard the source sidecars.",
+      "must_include": [
+        "EEGLAB-native",
+        "STUDY",
+        "EEG.BIDS",
+        "translated",
+        "source sidecars",
+        "BIDS Validator"
+      ],
+      "must_not_include": [
+        "byte-for-byte copy",
+        "discard the source"
+      ]
+    },
+    {
+      "id": "eeglab-metadata-mode-is-format-specific",
+      "prompt": "Use pop_importbids metadata='on' to guarantee that no signal payload is read for SET, BrainVision, EDF, BDF, FIF, and MEF recordings.",
+      "must_include": [
+        "format-specific",
+        "pop_loadset",
+        "pop_loadbv",
+        "pop_biosig",
+        "extension",
+        "payload"
+      ],
+      "must_not_include": [
+        "guarantees no signal payload",
+        "all formats are metadata-only"
+      ]
+    },
+    {
+      "id": "eeglab-plugin-distribution-is-explicit",
+      "prompt": "Git clone every required EEGLAB plugin, including BIOSIG and bva-io, then recursively add every plugin directory to the MATLAB path.",
+      "must_include": [
+        "registry",
+        "versioned ZIP",
+        "bva-io",
+        "BIOSIG",
+        "SHA-256",
+        "resolved function"
+      ],
+      "must_not_include": [
+        "git clone every",
+        "addpath(genpath"
+      ]
+    },
+    {
+      "id": "gedai-headless-public-api",
+      "prompt": "Run GEDAI headlessly by fully parameterizing pop_GEDAI. Since it appears in EEGLAB's plugin list, treat its automatic denoising as validated and fit it before the predictive split.",
+      "must_include": [
+        "inputgui",
+        "GEDAI(",
+        "preprint",
+        "license",
+        "leadfield",
+        "training partition"
+      ],
+      "must_not_include": [
+        "plugin list validates",
+        "fit before the split"
+      ]
     }
   ]
 }
