@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SKILL_ROOT = REPO_ROOT / "skill" / "eeg-provenance"
 REFERENCE = SKILL_ROOT / "references" / "runtime-compatibility.md"
@@ -72,4 +71,5 @@ def test_lifecycle_preference_is_a_weak_tie_breaker() -> None:
 
 def test_runtime_reference_is_directly_routed_from_skill() -> None:
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    assert "[runtime compatibility](references/runtime-compatibility.md)" in skill
+    assert "(references/runtime-compatibility.md)" in skill
+    assert "Pinned, legacy, or uncertain Python host" in skill

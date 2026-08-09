@@ -3,9 +3,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
-
 from scripts.validate_ledger import main, validate_ledger
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SKILL_ROOT = REPO_ROOT / "skill" / "eeg-provenance"
@@ -30,6 +28,11 @@ def test_template_matches_json_schema_and_project_invariants() -> None:
             encoding="utf-8"
         )
     )
+    assert schema["$id"].startswith(
+        "https://raw.githubusercontent.com/theJingqiZhou/eeg-provenance/"
+    )
+    assert "example.org/eeg-provenance" not in schema["$id"]
+    assert schema["properties"]["schema_version"] == {"const": "2.0.0"}
     Draft202012Validator.check_schema(schema)
     errors = sorted(
         Draft202012Validator(schema).iter_errors(_template()),
@@ -71,20 +74,150 @@ def test_schema_checks_date_time_format() -> None:
 
 def test_derivative_inside_source_is_rejected() -> None:
     ledger = _template()
+    ledger["dataset"]["authorized_output_roots"] = [
+        "/path/to/protected-source/ds-example/derivatives"
+    ]
     ledger["outputs"][0]["path"] = (
         "/path/to/protected-source/ds-example/derivatives/intake-report.json"
     )
     errors = validate_ledger(ledger)
-    assert any("inside source_root" in error for error in errors)
+    assert any("protected source_root" in error for error in errors)
 
 
-def test_adaptive_predictive_activity_must_fit_on_training_data() -> None:
+def test_writable_bids_derivative_is_allowed_when_explicitly_authorized() -> None:
+    ledger = _template()
+    ledger["dataset"]["protected_source_tree"] = False
+    ledger["dataset"]["authorized_output_roots"] = [
+        "/path/to/writable-dataset/derivatives/eeg-provenance"
+    ]
+    ledger["dataset"]["source_root"] = "/path/to/writable-dataset"
+    ledger["outputs"][0]["path"] = (
+        "/path/to/writable-dataset/derivatives/eeg-provenance/intake-report.json"
+    )
+    assert validate_ledger(ledger) == []
+
+
+def test_output_outside_authorized_roots_is_rejected() -> None:
+    ledger = _template()
+    ledger["outputs"][0]["path"] = "C:/unapproved/intake-report.json"
+    errors = validate_ledger(ledger)
+    assert any("outside authorized_output_roots" in error for error in errors)
+
+
+def test_authorized_output_root_cannot_contain_source_root() -> None:
+    ledger = _template()
+    ledger["dataset"]["protected_source_tree"] = False
+    ledger["dataset"]["authorized_output_roots"] = ["/path/to"]
+    errors = validate_ledger(ledger)
+    assert any("authorized root must not contain source_root" in error for error in errors)
+
+
+def test_adaptive_predictive_activity_requires_pre_prediction_availability() -> None:
     ledger = deepcopy(_template())
     ledger["contract"]["evaluation_mode"] = "predictive"
     ledger["activities"][0]["adaptive"] = True
-    ledger["activities"][0]["fit_scope"] = "all_data_declared"
+    ledger["activities"][0]["fit_scope"] = {
+        "population": "held-out test participants",
+        "uses_labels": True,
+        "uses_target_distribution": True,
+        "fit_unit": "participant",
+        "deployment_available": False,
+        "state_reused_on": ["same held-out participant"],
+    }
     errors = validate_ledger(ledger)
-    assert any("training-only" in error for error in errors)
+    assert any("available and authorized before prediction" in error for error in errors)
+
+
+def test_adaptive_predictive_activity_accepts_authorized_calibration() -> None:
+    ledger = deepcopy(_template())
+    ledger["contract"]["evaluation_mode"] = "predictive"
+    ledger["activities"][0]["adaptive"] = True
+    ledger["activities"][0]["fit_scope"] = {
+        "population": "independent subject calibration partition",
+        "uses_labels": True,
+        "uses_target_distribution": False,
+        "fit_unit": "participant",
+        "deployment_available": True,
+        "state_reused_on": ["post-calibration trials for the same participant"],
+    }
+    assert validate_ledger(ledger) == []
+
+
+def test_adaptive_predictive_activity_accepts_unlabeled_recording_fit() -> None:
+    ledger = deepcopy(_template())
+    ledger["contract"]["evaluation_mode"] = "predictive"
+    ledger["activities"][0]["adaptive"] = True
+    ledger["activities"][0]["fit_scope"] = {
+        "population": "current deployment recording",
+        "uses_labels": False,
+        "uses_target_distribution": True,
+        "fit_unit": "recording",
+        "deployment_available": True,
+        "state_reused_on": ["windows from the same recording"],
+    }
+    assert validate_ledger(ledger) == []
+
+
+def test_descriptive_adaptive_activity_declares_population() -> None:
+    ledger = deepcopy(_template())
+    ledger["activities"][0]["adaptive"] = True
+    ledger["activities"][0]["fit_scope"] = {
+        "population": "all records in the descriptive cohort",
+        "uses_labels": False,
+        "uses_target_distribution": True,
+        "fit_unit": "cohort",
+        "deployment_available": None,
+        "state_reused_on": ["same descriptive cohort"],
+    }
+    assert validate_ledger(ledger) == []
+
+
+def test_fixed_activity_rejects_noncanonical_fit_scope() -> None:
+    ledger = deepcopy(_template())
+    ledger["activities"][0]["fit_scope"]["population"] = "all records"
+    errors = validate_ledger(ledger)
+    assert any("canonical non-adaptive scope" in error for error in errors)
+
+
+def test_qc_requires_the_common_transition_skeleton() -> None:
+    ledger = deepcopy(_template())
+    del ledger["qc"]["event_transition"]
+    errors = validate_ledger(ledger)
+    assert any(
+        error.startswith("schema $.qc") and "event_transition" in error
+        for error in errors
+    )
+
+
+def test_qc_retention_fraction_is_bounded() -> None:
+    ledger = deepcopy(_template())
+    ledger["qc"]["retention"]["duration_fraction"] = 1.1
+    errors = validate_ledger(ledger)
+    assert any(
+        error.startswith("schema $.qc.retention.duration_fraction")
+        for error in errors
+    )
+
+
+def test_qc_pass_cannot_hide_warnings() -> None:
+    ledger = deepcopy(_template())
+    ledger["qc"]["warnings"] = ["Event count changed unexpectedly"]
+    errors = validate_ledger(ledger)
+    assert any("$.qc.status: pass cannot contain warnings" in error for error in errors)
+
+
+def test_qc_failed_observation_requires_fail_status() -> None:
+    ledger = deepcopy(_template())
+    ledger["qc"]["observations"][0]["status"] = "failed"
+    errors = validate_ledger(ledger)
+    assert any("failed observations require fail status" in error for error in errors)
+
+
+def test_qc_fail_status_requires_failed_observation() -> None:
+    ledger = deepcopy(_template())
+    ledger["qc"]["status"] = "fail"
+    errors = validate_ledger(ledger)
+    assert any("fail requires a failed observation" in error for error in errors)
 
 
 def test_spatial_channel_effect_requires_rank_record() -> None:

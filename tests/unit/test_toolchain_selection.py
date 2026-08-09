@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SKILL_ROOT = REPO_ROOT / "skill" / "eeg-provenance"
 
@@ -116,18 +115,62 @@ def test_progressive_router_stays_within_context_budget() -> None:
     pipeline = (SKILL_ROOT / "references" / "pipeline.md").read_text(
         encoding="utf-8"
     )
-    bids = (SKILL_ROOT / "references" / "bids-eeg-1.11.1.md").read_text(
-        encoding="utf-8"
-    )
-    non_bids = (SKILL_ROOT / "references" / "non-bids-intake.md").read_text(
-        encoding="utf-8"
-    )
     assert len(skill) <= 8_000
     assert len(skill.splitlines()) <= 140
     assert len(pipeline) <= 14_000
     assert len(pipeline.splitlines()) <= 250
-    assert len(skill) + len(bids) + len(pipeline) <= 40_000
-    assert len(skill) + len(non_bids) + len(pipeline) <= 45_000
+
+    # Character counts are a tokenizer-independent regression proxy. Each path
+    # represents the complete references a realistic task is expected to load.
+    route_budgets = {
+        "light EDF inspect": (
+            58_000,
+            ["non-bids-intake.md", "pipeline.md", "tools-data-access.md"],
+        ),
+        "BIDS MNE temporal processing": (
+            56_000,
+            [
+                "bids-eeg-1.11.1.md",
+                "pipeline.md",
+                "preprocessing-interventions.md",
+                "tools-signal.md",
+            ],
+        ),
+        "cross-montage spatial harmonization": (
+            41_000,
+            [
+                "pipeline.md",
+                "channels-montages.md",
+                "harmonization.md",
+                "tools-signal.md",
+            ],
+        ),
+        "Braindecode window/cache handoff": (
+            34_000,
+            ["pipeline.md", "tools-frameworks.md"],
+        ),
+        "PyHealth TUAB task/cache": (
+            69_000,
+            [
+                "non-bids-intake.md",
+                "pipeline.md",
+                "tools-frameworks.md",
+                "runtime-compatibility.md",
+            ],
+        ),
+        "EEGLAB extension execution": (
+            45_000,
+            ["pipeline.md", "tools-eeglab.md", "tools-eeglab-extensions.md"],
+        ),
+    }
+    for route, (budget, reference_names) in route_budgets.items():
+        total = len(skill) + sum(
+            len(
+                (SKILL_ROOT / "references" / name).read_text(encoding="utf-8")
+            )
+            for name in reference_names
+        )
+        assert total <= budget, f"{route}: {total} characters exceeds {budget}"
     for name in (
         "tools-data-access.md",
         "tools-signal.md",

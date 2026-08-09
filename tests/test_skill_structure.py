@@ -1,8 +1,8 @@
 import re
+import tomllib
 from pathlib import Path
 
 import yaml
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SKILL_ROOT = REPO_ROOT / "skill" / "eeg-provenance"
@@ -76,7 +76,13 @@ def _reference_graph() -> tuple[set[str], dict[str, set[str]]]:
 
 def test_reference_graph_is_bounded_reachable_and_acyclic() -> None:
     roots, graph = _reference_graph()
-    assert roots == set(graph), "Every reference must be linked directly from SKILL.md"
+    assert roots == {
+        "dataset-intake.md",
+        "pipeline.md",
+        "runtime-compatibility.md",
+        "provenance-ledger.md",
+        "evidence-register.md",
+    }
 
     distance = {name: 1 for name in roots}
     frontier = list(roots)
@@ -88,7 +94,7 @@ def test_reference_graph_is_bounded_reachable_and_acyclic() -> None:
                 distance[child] = distance[parent] + 1
                 frontier.append(child)
     assert set(distance) == set(graph)
-    assert max(distance.values()) == 1
+    assert max(distance.values()) <= 2
 
     visiting: set[str] = set()
     visited: set[str] = set()
@@ -124,6 +130,21 @@ def test_long_references_have_contents_navigation() -> None:
             assert re.search(r"^## (?:Contents|Table of contents)$", text, re.MULTILINE), path
 
 
+def test_bids_contract_has_version_pinned_public_sources() -> None:
+    contract = (SKILL_ROOT / "references" / "bids-eeg-1.11.1.md").read_text(
+        encoding="utf-8"
+    )
+    evidence = (SKILL_ROOT / "references" / "evidence-register.md").read_text(
+        encoding="utf-8"
+    )
+    for text in (contract, evidence):
+        assert "bids-specification.readthedocs.io/en/v1.11.1/" in text
+        assert "bids-specification.readthedocs.io/en/stable/" not in text
+        assert "PDF pp." not in text
+    assert "supplied 805-page" not in contract
+    assert "## Normative source map" in contract
+
+
 def test_legacy_skill_mirrors_are_absent() -> None:
     assert not (SKILL_ROOT / "README.md").exists()
     assert not (REPO_ROOT / ".agents").exists()
@@ -138,3 +159,38 @@ def test_legacy_skill_mirrors_are_absent() -> None:
     assert not (SKILL_ROOT / "references" / "MNE Resources").exists()
     assert not (SKILL_ROOT / "references" / "NumPy Resources").exists()
     assert not (SKILL_ROOT / "references" / "SciPy Resources").exists()
+
+
+def test_optional_framework_contracts_have_isolated_ci_lanes() -> None:
+    framework_workflow = yaml.safe_load(
+        (REPO_ROOT / ".github" / "workflows" / "framework-contracts.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    jobs = framework_workflow["jobs"]
+    assert {
+        "braindecode-contract",
+        "moabb-contract",
+        "pyhealth-contract",
+    } <= set(jobs)
+    commands = {
+        name: "\n".join(
+            step.get("run", "") for step in job["steps"] if "run" in step
+        )
+        for name, job in jobs.items()
+    }
+    assert "--group braindecode --locked" in commands["braindecode-contract"]
+    assert "--group adapters --locked" in commands["moabb-contract"]
+    assert "--only-group pyhealth --locked" in commands["pyhealth-contract"]
+
+    core_workflow = (
+        REPO_ROOT / ".github" / "workflows" / "ci.yml"
+    ).read_text(encoding="utf-8")
+    for marker in ("not adapters", "not braindecode", "not pyhealth"):
+        assert marker in core_workflow
+
+    project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert "pyhealth==2.0.1" in project["dependency-groups"]["pyhealth"]
+    assert project["tool"]["uv"]["sources"]["torch"] == {
+        "index": "pytorch-cpu"
+    }
