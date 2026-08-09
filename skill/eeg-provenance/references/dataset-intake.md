@@ -11,8 +11,8 @@ than accumulating both. (Evidence: S57; local workflow policy)
 | Valid BIDS root or derivative contract | [BIDS 1.11.1 EEG](bids-eeg-1.11.1.md) |
 | Documented legacy/project release | [Non-BIDS intake](non-bids-intake.md) |
 | `dsNNNNNN`, `nmNNNNNN`, or `onNNNNNN` | Resolve the provider record/version before transport; EEGDash is a catalogue/access option, not owner identity |
-| Remote or ephemeral execution | Add the top-level remote-execution branch only after the source branch is known |
-| Source/forward-model endpoint | Add the top-level anatomy branch; otherwise omit anatomy |
+| Remote or ephemeral execution | Add [remote cache execution](remote-cache-execution.md) only after the source branch is known |
+| Source/forward-model endpoint | Add [anatomy and forward models](anatomy-forward-model.md); otherwise omit anatomy |
 
 Evidence: S01, S03, S31, S50, S51.
 
@@ -29,7 +29,7 @@ Record observed values, their source files/pages, conflicts, and unknowns for:
 - event fields, value mapping, latency precision, discontinuities, and protocol;
 - line frequency, hardware/software filters, amplifier facts, and every known
   conversion or prior preprocessing step;
-- source read-only boundary and separate destinations for reports, caches,
+- source-protection state and narrow authorized roots for reports, caches,
   temporary files, and derivatives.
 
 Evidence: S01–S03, S05, S08.

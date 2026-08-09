@@ -109,7 +109,9 @@ python scripts/eegdash_intake.py \
 
 Its non-finite, amplitude, sampled-rank, geometry, annotation, and spectral
 summaries are descriptive observations. Set endpoint-specific thresholds in the
-operation contract and fit adaptive QC inside the training partition.
+operation contract. In predictive work, fit adaptive QC only from the declared
+population available before prediction; default to the training fold unless the
+deployment protocol explicitly provides calibration or unlabeled record data.
 [[S17]](evidence-register.md#s17) [[S20]](evidence-register.md#s20)
 [[S31]](evidence-register.md#s31)
 

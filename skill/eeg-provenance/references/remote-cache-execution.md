@@ -102,7 +102,7 @@ Avoid layouts with thousands of tiny files on a mounted Colab Drive path because
 
 ## Preserve evaluation boundaries
 
-A reusable cache may contain immutable source-aligned data or deterministic fixed transforms shared across folds. Any operation that learns thresholds, decompositions, normalization statistics, feature selection, balancing, or augmentation policy from observations belongs inside the training partition and, when tuned, inside the resampling loop. [[S20]](evidence-register.md#s20) [[S21]](evidence-register.md#s21) [[S22]](evidence-register.md#s22)
+A reusable cache may contain immutable source-aligned data or deterministic fixed transforms shared across folds. Keep learned thresholds, decompositions, normalization statistics, feature selection, balancing, and augmentation state scoped to information authorized before prediction—normally the training fold and, when tuned, its resampling loop. If the deployment contract supplies calibration or unlabeled per-recording data, identify and cache that state separately rather than fitting it across held-out records. [[S20]](evidence-register.md#s20) [[S21]](evidence-register.md#s21) [[S22]](evidence-register.md#s22)
 
 Include participant, session, visit, site, and recording identifiers needed to construct the declared generalization split downstream. Do not trade away leakage-safe grouping merely to make a cache easier to stream. [[S20]](evidence-register.md#s20) [[S21]](evidence-register.md#s21)
 

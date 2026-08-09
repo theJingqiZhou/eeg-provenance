@@ -157,8 +157,9 @@ suggest hypotheses but cannot replace the publisher protocol. [[S03]](evidence-r
 [[S44]](evidence-register.md#s44)
 
 Construction can load complete arrays, segment examples, transform labels, and
-write an IO cache. After the adaptation record authorizes execution, use a cache
-outside the source, start with no transforms and one worker, verify generated
+write an IO cache. After the adaptation record authorizes execution, use a
+narrow authorized cache root that does not overlap protected source bytes,
+start with no transforms and one worker, verify generated
 IDs/shapes/labels/counts against the release, and use a fresh cache identity for
 each changed offline configuration. [[S05]](evidence-register.md#s05)
 [[S23]](evidence-register.md#s23) [[S44]](evidence-register.md#s44)

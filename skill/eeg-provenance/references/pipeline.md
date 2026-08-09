@@ -50,7 +50,7 @@ Record only fields relevant to the active operation:
 | `input -> output` | Entity/representation before and after; include axes, units, support, timing, labels, and product stage that change. |
 | `assumptions` | Required source facts, endpoint constraints, and unresolved conflicts. |
 | `read/write scope` | Network, metadata, samples, mutation, cache, temporary, and derivative effects. |
-| `fit_state` | `none`, `training_only`, `within_train_fold`, or an explicitly justified alternative. |
+| `fit_state` | Fitted population/unit, label and target-distribution access, availability at prediction, and state reuse; use `none` only for a fixed operation. |
 | `implementation` | Exact tool/version/API and why its contract matches this operation. |
 | `parameters` | Complete effective arguments, defaults accepted deliberately, seed, and fitted-state identity. |
 | `QC/stop` | Observable consequences, comparison or tolerance, and the condition that blocks this operation. |
@@ -114,7 +114,7 @@ identity, manifest, availability, and content verification. [[S37]](evidence-reg
 
 ## Inspect
 
-**Input -> output:** protected source -> observations, conflicts, and unknowns at
+**Input -> output:** declared source -> observations, conflicts, and unknowns at
 the least sufficient level. Use provider metadata and sidecars before headers,
 headers before lazy signals, and bounded samples only when the question requires
 them. A reader field is a container observation until reconciled with release
@@ -194,16 +194,20 @@ task/sample contract is intended. [[S20]](evidence-register.md#s20)
 
 ## Fit adaptive operations
 
-**Input -> output:** training entities -> reusable fitted state, then unchanged
-state applied to validation/test entities. This includes ICA, learned bad-channel
-or rejection thresholds, artifact models, normalizers, vocabularies, and any
-data-driven branch. Preserve training IDs, grouping/split, algorithm, seed,
-selection scope, fitted-object identity/hash, and application compatibility.
+**Input -> output:** fit population -> reusable state -> allowed use. This
+includes ICA, learned thresholds, artifact models,
+normalizers, vocabularies, and data-driven branches. In predictive evaluation,
+the population and any labels or target distribution must be available and
+authorized before prediction. Distinguish training folds, calibration,
+external pretrained state, and unlabeled per-recording estimates. Descriptive
+work still declares population and reuse. Preserve entity IDs, grouping/split,
+fit unit, algorithm, seed, fitted-object identity/hash, and compatibility.
 Read [preprocessing interventions](preprocessing-interventions.md), then use
 [MNE signal](tools-signal.md), [EEGLAB/plugin](tools-eeglab.md), or [framework
 integrations](tools-frameworks.md). If an EEGLAB extension is selected, resolve
-its distribution and computational entry point before fitting. Reject a bundled
-cache/task route whose fit population cannot match the generalization contract.
+its distribution and computational entry point with the [EEGLAB extension
+router](tools-eeglab-extensions.md) before fitting. Reject a bundled cache/task
+route whose fit population cannot match the generalization contract.
 [[S12]](evidence-register.md#s12)
 [[S17]](evidence-register.md#s17) [[S20]](evidence-register.md#s20)
 [[S21]](evidence-register.md#s21) [[S53]](evidence-register.md#s53)

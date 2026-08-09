@@ -12,14 +12,18 @@ endpoint needs it. (Evidence: S57; local workflow policy)
 ## Kernel invariants
 
 1. Preserve source bytes. Put reports, caches, temporary files, and derivatives
-   outside the source tree. (Evidence: S23, S25)
+   only in explicitly authorized output roots. If the source tree is protected,
+   keep every write outside it; otherwise an authorized BIDS `derivatives/`
+   subtree is valid. (Evidence: S23, S25; local write-boundary policy)
 2. Keep unknown acquisition or preprocessing history unknown while actively
    searching publisher records, release documents, papers, codebooks, and
    conversion code. (Evidence: S01, S03, S06)
 3. Preserve representation identity: distinguish channels from electrodes and
-   native, bad, missing, dropped, interpolated, and virtual channels. Fit every
-   adaptive operation inside the declared training scope. (Evidence: S07, S08,
-   S20, S21, S22)
+   native, bad, missing, dropped, interpolated, and virtual channels. For
+   predictive evaluation, fit adaptive state only from information available
+   and authorized before the corresponding prediction. For descriptive work,
+   declare the fitted population and reuse scope. (Evidence: S07, S08, S20,
+   S21, S22)
 4. Reject universal pipelines. Tie each operation to the endpoint, input and
    output semantics, assumptions, side effects, fit state, and QC. (Evidence:
    S03, S18, S19)
@@ -44,8 +48,8 @@ dataset is available. (Evidence: S03, S05; local workflow policy)
 
 ## Workflow
 
-1. State the current intent, endpoint, protected source, permitted writes, and
-   least sufficient observation level.
+1. State the current intent, endpoint, source-protection state, authorized
+   output roots, and least sufficient observation level.
 2. Read exactly one intake branch: BIDS, non-BIDS, or the short common checklist
    while the source contract is unknown. Do not preload samples to answer a
    catalogue, tree, sidecar, or native-header question. (Evidence: S01, S23,
@@ -89,21 +93,12 @@ python scripts/evidence_lookup.py S03 S20 S52
 
 Load only a resource whose condition is true:
 
-- Intake: use the [dataset router](references/dataset-intake.md), then exactly
-  one of [BIDS EEG](references/bids-eeg-1.11.1.md) or [documented
-  non-BIDS](references/non-bids-intake.md).
-- Process semantics: use the [pipeline](references/pipeline.md); add
-  [preprocessing interventions](references/preprocessing-interventions.md),
-  [channels/montages](references/channels-montages.md), or
-  [harmonization](references/harmonization.md) only at the matching stage.
-- Implementation: select [data access](references/tools-data-access.md), [MNE
-  signal](references/tools-signal.md), [EEGLAB core/data](references/tools-eeglab.md),
-  or [dataset frameworks](references/tools-frameworks.md). Add [EEGLAB
-  extensions](references/tools-eeglab-extensions.md) only after choosing a
-  non-core importer or method.
-- Environment branches: [runtime compatibility](references/runtime-compatibility.md),
-  [remote cache execution](references/remote-cache-execution.md), or [anatomy
-  and forward models](references/anatomy-forward-model.md).
+- Source identity or acquisition: enter the [dataset intake
+  router](references/dataset-intake.md), then follow only its matching leaf.
+- Processing or tool choice: enter the [pipeline](references/pipeline.md), then
+  follow only the active stage's semantic and implementation leaves.
+- Pinned, legacy, or uncertain Python host: add [runtime
+  compatibility](references/runtime-compatibility.md).
 - Execute-mode record: [provenance ledger](references/provenance-ledger.md).
   Citation audit only: [evidence register](references/evidence-register.md).
 

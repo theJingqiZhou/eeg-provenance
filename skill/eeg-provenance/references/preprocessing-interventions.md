@@ -8,7 +8,7 @@ State the signal or nuisance targeted, required retained band, filter family, pa
 
 Inspect the effective response and time-domain effect on representative signals. High-pass filters can distort transient waveforms and bias ERP amplitude/latency depending on signal and design, so never present a cutoff alone as sufficient specification. [[S09]](evidence-register.md#s09) [[S10]](evidence-register.md#s10)
 
-Fit or choose any data-adaptive filter parameters within the training partition for predictive evaluation. A fixed, predeclared linear filter may be applied identically to all partitions, but choosing it from held-out performance is tuning and must be nested. [[S20]](evidence-register.md#s20) [[S21]](evidence-register.md#s21)
+Fit or choose data-adaptive filter parameters only from information authorized before prediction. The default inductive route fits within each training fold; a declared calibration or deployment-time estimate is a different protocol. A fixed, predeclared linear filter may be applied identically to all partitions, but choosing it from held-out outcomes is tuning and must be nested. [[S20]](evidence-register.md#s20) [[S21]](evidence-register.md#s21)
 
 ## Line-noise handling
 
@@ -32,7 +32,7 @@ Do not baseline-correct ICA training epochs without checking the decomposition a
 
 Separate detection from disposition. Record metric, window, threshold, calibration subset, channel type, reviewer, bad span, and whether data were retained, dropped, or interpolated. COBIDAS requires artifact/exclusion reporting, and adaptive threshold methods optimize specific objectives. [[S03]](evidence-register.md#s03) [[S17]](evidence-register.md#s17)
 
-Treat thresholds learned from the dataset as fitted state. For predictive evaluation, learn them within training folds and apply the resulting rule to validation/test data without using held-out outcomes or distribution summaries. [[S17]](evidence-register.md#s17) [[S20]](evidence-register.md#s20)
+Treat thresholds learned from the dataset as fitted state. For predictive evaluation, default to training-fold estimates. Use calibration or unlabeled target-record summaries only when the evaluation and deployment contract grants the same access; never use unavailable held-out outcomes. [[S17]](evidence-register.md#s17) [[S20]](evidence-register.md#s20)
 
 ## ICA
 
@@ -46,7 +46,7 @@ Treat ICLabel outputs as probabilities/advisory evidence, not automatic truth. V
 
 Record calibration data, thresholds, windowing, maximum repaired channels/components, output data fraction, and diagnostics. ASR and AutoReject are adaptive procedures whose results depend on calibration and objectives. [[S16]](evidence-register.md#s16) [[S17]](evidence-register.md#s17)
 
-Fit calibration and thresholds inside the training partition for predictive evaluation; never let held-out trials determine repairs, rejection thresholds, or component decisions. [[S17]](evidence-register.md#s17) [[S20]](evidence-register.md#s20) [[S21]](evidence-register.md#s21)
+Fit calibration and thresholds from the declared pre-prediction population. Use training-fold state for ordinary inductive evaluation; allow a separate calibration partition or unlabeled deployment recording only when the protocol provides it. Never let unavailable held-out outcomes determine repairs, rejection thresholds, or component decisions. [[S17]](evidence-register.md#s17) [[S20]](evidence-register.md#s20) [[S21]](evidence-register.md#s21)
 
 ## Sensitivity and QC
 
