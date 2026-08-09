@@ -1,0 +1,69 @@
+name: validate-framework-contracts
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+  push:
+    paths:
+      - ".github/workflows/framework-contracts.yml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "skill/eeg-provenance/references/runtime-compatibility.md"
+      - "skill/eeg-provenance/references/tools-frameworks.md"
+      - "tests/integration/test_braindecode_package.py"
+      - "tests/integration/test_pyhealth_package.py"
+      - "tests/unit/test_established_toolchains.py"
+  pull_request:
+    paths:
+      - ".github/workflows/framework-contracts.yml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "skill/eeg-provenance/references/runtime-compatibility.md"
+      - "skill/eeg-provenance/references/tools-frameworks.md"
+      - "tests/integration/test_braindecode_package.py"
+      - "tests/integration/test_pyhealth_package.py"
+      - "tests/unit/test_established_toolchains.py"
+
+jobs:
+  braindecode-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --group validation --group braindecode --locked
+      - run: >-
+          uv run --group validation --group braindecode --locked pytest
+          -m braindecode
+          tests/integration/test_braindecode_package.py
+
+  moabb-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --group validation --group adapters --locked
+      - run: >-
+          uv run --group validation --group adapters --locked pytest
+          -m adapters
+          tests/unit/test_established_toolchains.py
+
+  pyhealth-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --only-group pyhealth --locked
+      - run: >-
+          uv run --only-group pyhealth --locked pytest -m pyhealth
+          tests/integration/test_pyhealth_package.py

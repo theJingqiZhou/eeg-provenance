@@ -14,11 +14,14 @@ jobs:
           python-version: "3.12"
           enable-cache: true
       - run: uv sync --group validation --locked
-      - run: uv run python tools/audit_citations.py
+      - run: uv run --group validation --locked python tools/audit_citations.py
       - run: >-
-          uv run python skill/eeg-provenance/scripts/validate_ledger.py
+          uv run --group validation --locked python
+          skill/eeg-provenance/scripts/validate_ledger.py
           skill/eeg-provenance/assets/provenance-ledger.template.json
-      - run: uv run pytest -m "not archive and not eegdash and not network"
+      - run: >-
+          uv run --group validation --locked pytest -m
+          "not archive and not eegdash and not network and not adapters and not braindecode and not pyhealth"
 
   eegdash-contract:
     runs-on: ubuntu-latest
@@ -29,4 +32,6 @@ jobs:
           python-version: "3.12"
           enable-cache: true
       - run: uv sync --group validation --group eegdash --locked
-      - run: uv run pytest -m "eegdash and not archive and not network"
+      - run: >-
+          uv run --group validation --group eegdash --locked pytest -m
+          "eegdash and not archive and not network"
