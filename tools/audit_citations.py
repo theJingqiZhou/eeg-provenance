@@ -139,8 +139,6 @@ def audit(root: Path) -> list[str]:
                 for line in block_lines
             ):
                 continue
-            if block.startswith("| Topic |") and "PDF pages" in block_lines[0]:
-                continue
             if not CLAIM_RE.search(block) or _declared_ids(block):
                 continue
             next_block = blocks[index + 1][1] if index + 1 < len(blocks) else ""

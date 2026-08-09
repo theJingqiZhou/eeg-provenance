@@ -1,8 +1,6 @@
 # BIDS 1.11.1 EEG contract
 
-Use this reference when interpreting, validating, or writing BIDS EEG metadata. It is a scoped operational map of the supplied 805-page BIDS 1.11.1 PDF, not a substitute for the full specification or the official BIDS validator. Apply only rules relevant to core dataset structure, EEG, events, coordinates, and derivatives. [[S01]](evidence-register.md#s01) [[S23]](evidence-register.md#s23)
-
-PDF page numbers below are one-based file pages. In the normative chapters, the printed page number is generally one lower.
+Use this reference when interpreting, validating, or writing BIDS EEG metadata. It is a scoped operational map of the public, version-pinned BIDS 1.11.1 specification, not a substitute for the normative specification or the official BIDS Validator. The full specification PDF is intentionally not bundled. For a rule or field not covered here, consult the official 1.11.1 HTML or schema; if neither is accessible, record the question as unresolved instead of inferring a requirement. [[S01]](evidence-register.md#s01) [[S23]](evidence-register.md#s23) [[S47]](evidence-register.md#s47)
 
 ## Contents
 
@@ -19,7 +17,7 @@ PDF page numbers below are one-based file pages. In the normative chapters, the 
 - [Anatomy linkage for EEG source work](#anatomy-linkage-for-eeg-source-work)
 - [Derivative outputs](#derivative-outputs)
 - [Validation boundary](#validation-boundary)
-- [PDF source map](#pdf-source-map)
+- [Normative source map](#normative-source-map)
 
 ## Requirement discipline
 
@@ -35,7 +33,7 @@ Distinguish three layers:
 
 - `sourcedata/` contains material before harmonization, reconstruction, or format conversion. Retain it when allowed because conversion can omit acquisition-specific metadata. [[S01]](evidence-register.md#s01)
 - Raw BIDS contains unprocessed data or data minimally processed for format conversion. A `DatasetType` of `raw` does not prove that the samples are untouched; inspect `GeneratedBy`, `SourceDatasets`, documentation, and conversion history. [[S01]](evidence-register.md#s01) [[S33]](evidence-register.md#s33)
-- Derivatives contain processing outputs and must remain distinguishable from raw data. Protect the source tree and write new outputs to a dedicated derivative dataset or a separate external output root. [[S23]](evidence-register.md#s23)
+- Derivatives contain processing outputs and must remain distinguishable from raw data. Keep raw source bytes immutable. If the dataset tree is protected, use an external output root; if it is writable and permission is explicit, an authorized in-dataset `derivatives/` subtree is valid. [[S23]](evidence-register.md#s23)
 
 Do not treat the presence of a `derivatives/` directory as proof that each child is BIDS-compliant. BIDS permits a heterogeneous mixture of standardized and non-compliant derivatives; inspect each derivative dataset’s own root metadata. [[S23]](evidence-register.md#s23)
 
@@ -149,16 +147,18 @@ Run the official BIDS Validator for conformance and record its version, schema t
 
 Preserve validator failures and warnings in the Data Intake Report. Do not “repair” a protected source tree during intake; plan corrections as a new curated dataset or derivative with explicit source identities. [[S01]](evidence-register.md#s01) [[S23]](evidence-register.md#s23)
 
-## PDF source map
+## Normative source map
 
-| Topic | BIDS 1.11.1 PDF pages |
-|---|---:|
-| Definitions, filesystem, filenames, source/raw/derived | 47–53 |
-| TSV, JSON, and inheritance | 54–60 |
-| Dataset description and derivative root provenance | 65–70 |
-| Participants, sessions, scans, and events | 72–89 |
-| MRI anatomy, landmarks, T1w, and defacing | 110–120 |
-| EEG recording formats and EEG JSON | 185–192 |
-| Channels | 193–196 |
-| Electrodes, coordinates, and landmark photos | 197–203 |
-| Stable BIDS Derivatives conventions | 365–372 |
+Use these immutable-version documentation routes when this operational summary is insufficient. Do not replace them with the moving `stable` documentation route. [[S01]](evidence-register.md#s01) [[S23]](evidence-register.md#s23)
+
+| Topic | Official BIDS 1.11.1 section |
+|---|---|
+| Requirement levels, filesystem, filenames, formats, and inheritance | [Common principles](https://bids-specification.readthedocs.io/en/v1.11.1/common-principles.html) |
+| Dataset root metadata and source-dataset identity | [Dataset description](https://bids-specification.readthedocs.io/en/v1.11.1/modality-agnostic-files/dataset-description.html) |
+| Participants, sessions, and scans | [Data summary files](https://bids-specification.readthedocs.io/en/v1.11.1/modality-agnostic-files/data-summary-files.html) |
+| Event tables and timing metadata | [Events](https://bids-specification.readthedocs.io/en/v1.11.1/modality-agnostic-files/events.html) |
+| MRI anatomy, landmarks, T1w images, and defacing | [Magnetic resonance imaging data](https://bids-specification.readthedocs.io/en/v1.11.1/modality-specific-files/magnetic-resonance-imaging-data.html) |
+| EEG files, sidecars, channels, electrodes, and coordinates | [Electroencephalography](https://bids-specification.readthedocs.io/en/v1.11.1/modality-specific-files/electroencephalography.html) |
+| Derivative dataset structure and file-level metadata | [Derivatives introduction](https://bids-specification.readthedocs.io/en/v1.11.1/derivatives/introduction.html) and [common data types](https://bids-specification.readthedocs.io/en/v1.11.1/derivatives/common-data-types.html) |
+
+Evidence: S01, S23.
