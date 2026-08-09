@@ -18,7 +18,7 @@
     "limitations"
   ],
   "properties": {
-    "schema_version": {"const": "1.1.0"},
+    "schema_version": {"const": "1.2.0"},
     "ledger_id": {"type": "string", "minLength": 1},
     "created_at": {"type": "string", "format": "date-time"},
     "dataset": {"$ref": "#/$defs/dataset"},
@@ -71,9 +71,10 @@
                 "minItems": 1,
                 "items": {
                   "type": "object",
+                  "additionalProperties": false,
                   "required": ["algorithm", "value"],
                   "properties": {
-                    "algorithm": {"type": "string"},
+                    "algorithm": {"type": "string", "minLength": 1},
                     "value": {"type": "string", "minLength": 1}
                   }
                 }
@@ -120,6 +121,7 @@
           "minItems": 1,
           "items": {
             "type": "object",
+            "additionalProperties": false,
             "required": ["id", "recording_id", "shape", "sampling_frequency_hz", "units", "reference"],
             "properties": {
               "id": {"type": "string", "minLength": 1},
@@ -166,7 +168,6 @@
         },
         "harmonization_decisions": {
           "type": "array",
-          "minItems": 1,
           "items": {"$ref": "#/$defs/decision"}
         }
       }
@@ -174,10 +175,12 @@
     "toolchainDecision": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["phase", "intent", "observation_level", "hard_constraints", "preferences", "candidates", "fallback_condition"],
+      "required": ["id", "phase", "intent", "status", "observation_level", "hard_constraints", "preferences", "candidates", "failure_policy", "fallback_condition"],
       "properties": {
+        "id": {"type": "string", "minLength": 1},
         "phase": {"type": "string", "minLength": 1},
         "intent": {"type": "string", "minLength": 1},
+        "status": {"enum": ["selected", "planned", "stopped"]},
         "observation_level": {
           "enum": ["catalogue", "tree_and_sidecars", "native_header", "lazy_signal", "bounded_samples", "full_execution"]
         },
@@ -186,22 +189,57 @@
         "candidates": {
           "type": "array",
           "minItems": 1,
-          "contains": {
-            "type": "object",
-            "required": ["status"],
-            "properties": {"status": {"enum": ["selected", "planned"]}}
-          },
-          "minContains": 1,
           "items": {"$ref": "#/$defs/toolCandidate"}
         },
-        "fallback_condition": {"type": "string", "minLength": 1}
-      }
+        "failure_policy": {"enum": ["stop", "fallback"]},
+        "fallback_condition": {"type": ["string", "null"]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "selected"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "candidates": {
+                "contains": {"properties": {"status": {"const": "selected"}}, "required": ["status"]},
+                "minContains": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "planned"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "candidates": {
+                "contains": {"properties": {"status": {"const": "planned"}}, "required": ["status"]},
+                "minContains": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "stopped"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "candidates": {
+                "not": {"contains": {"properties": {"status": {"enum": ["selected", "planned"]}}, "required": ["status"]}}
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"failure_policy": {"const": "fallback"}}, "required": ["failure_policy"]},
+          "then": {"properties": {"fallback_condition": {"type": "string", "minLength": 1}}},
+          "else": {"properties": {"fallback_condition": {"const": null}}}
+        }
+      ]
     },
     "toolCandidate": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["tool", "version", "availability", "status", "capability", "read_scope", "write_scope", "reason", "evidence_ids"],
+      "required": ["id", "tool", "version", "availability", "status", "capability", "read_scope", "write_scope", "reason", "evidence_ids"],
       "properties": {
+        "id": {"type": "string", "minLength": 1},
         "tool": {"type": "string", "minLength": 1},
         "version": {"type": ["string", "null"]},
         "availability": {"enum": ["verified", "unavailable", "unknown"]},
@@ -233,14 +271,17 @@
     "activity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "sequence", "type", "adaptive", "software", "parameters", "fit_scope", "input_entities", "output_entities", "channel_effect", "evidence_ids"],
+      "required": ["id", "sequence", "type", "toolchain_decision_id", "tool_candidate_id", "adaptive", "software", "parameters", "fit_scope", "input_entities", "output_entities", "channel_effect", "evidence_ids"],
       "properties": {
         "id": {"type": "string", "minLength": 1},
         "sequence": {"type": "integer", "minimum": 1},
         "type": {"type": "string", "minLength": 1},
+        "toolchain_decision_id": {"type": "string", "minLength": 1},
+        "tool_candidate_id": {"type": "string", "minLength": 1},
         "adaptive": {"type": "boolean"},
         "software": {
           "type": "object",
+          "additionalProperties": false,
           "required": ["name", "version"],
           "properties": {
             "name": {"type": "string", "minLength": 1},
@@ -255,17 +296,18 @@
         "channel_effect": {"enum": ["none", "rename", "unit_convert", "mark_bad", "drop", "interpolate", "rereference", "virtual"]},
         "rank": {
           "type": ["object", "null"],
+          "additionalProperties": false,
           "properties": {
-            "before": {"type": ["integer", "null"]},
-            "after": {"type": ["integer", "null"]},
-            "method": {"type": "string"}
+            "before": {"type": ["integer", "null"], "minimum": 0},
+            "after": {"type": ["integer", "null"], "minimum": 0},
+            "method": {"type": "string", "minLength": 1}
           },
           "required": ["before", "after", "method"]
         },
         "shape_before": {"type": "array", "items": {"type": "integer", "minimum": 0}},
         "shape_after": {"type": "array", "items": {"type": "integer", "minimum": 0}},
-        "sampling_frequency_hz_before": {"type": ["number", "null"]},
-        "sampling_frequency_hz_after": {"type": ["number", "null"]},
+        "sampling_frequency_hz_before": {"type": ["number", "null"], "exclusiveMinimum": 0},
+        "sampling_frequency_hz_after": {"type": ["number", "null"], "exclusiveMinimum": 0},
         "reference_before": {"type": ["string", "null"]},
         "reference_after": {"type": ["string", "null"]},
         "evidence_ids": {"$ref": "#/$defs/evidenceIds"}

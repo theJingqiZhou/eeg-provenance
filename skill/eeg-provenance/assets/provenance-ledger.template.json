@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "ledger_id": "eegprov-example-001",
   "created_at": "2026-08-08T12:00:00Z",
   "dataset": {
@@ -65,8 +65,10 @@
     ],
     "toolchain_decisions": [
       {
+        "id": "decision-bids-conformance",
         "phase": "bids_conformance",
         "intent": "Assess BIDS 1.11.1 conformance and preserve a JSON issue report without changing the source",
+        "status": "selected",
         "observation_level": "tree_and_sidecars",
         "hard_constraints": [
           "Source tree remains read-only",
@@ -79,7 +81,8 @@
         ],
         "candidates": [
           {
-            "tool": "BIDS Validator",
+            "id": "candidate-bids-validator-deno",
+            "tool": "bids-validator-deno",
             "version": "2.2.9",
             "availability": "verified",
             "status": "selected",
@@ -90,7 +93,8 @@
             "evidence_ids": ["S47"]
           },
           {
-            "tool": "PyBIDS",
+            "id": "candidate-pybids",
+            "tool": "pybids",
             "version": "0.22.0",
             "availability": "verified",
             "status": "rejected",
@@ -101,7 +105,8 @@
             "evidence_ids": ["S48"]
           }
         ],
-        "fallback_condition": "If the pinned executable is unavailable, install or run the documented official Deno release and record its version before validation"
+        "failure_policy": "stop",
+        "fallback_condition": null
       }
     ],
     "harmonization_decisions": [
@@ -136,6 +141,8 @@
       "id": "activity-intake-001",
       "sequence": 1,
       "type": "metadata_intake",
+      "toolchain_decision_id": "decision-bids-conformance",
+      "tool_candidate_id": "candidate-bids-validator-deno",
       "adaptive": false,
       "software": {
         "name": "bids-validator-deno",

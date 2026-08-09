@@ -1,43 +1,33 @@
 # Provenance ledger
 
-The ledger records an auditable processing graph using W3C PROV’s Entity–Activity–Agent pattern. The JSON schema is project-specific and does not claim PROV-O conformance. A BIDS derivative must independently satisfy its dataset, filename, sidecar, inheritance, and source-link requirements. [[S05]](evidence-register.md#s05) [[S23]](evidence-register.md#s23)
+Use the ledger only for **execute** mode. Inspect mode returns a bounded finding; design mode returns a planned contract. The ledger records an auditable processing graph using W3C PROV's Entity–Activity–Agent pattern, but its JSON schema is project-specific and does not claim PROV-O conformance. BIDS derivatives must independently satisfy the applicable BIDS requirements. (Evidence: S05, S23; local workflow policy)
 
-## Identity and source entities
+## Identity and contract
 
-Assign a stable `ledger_id` and timestamp. Record dataset/recording identifiers, version/commit, source URI, immutable relative paths, checksums or annex keys, BIDS version, and whether acquisition history is `known`, `partial`, or `unknown`. Persistent identities, rich metadata, and source relations support reuse and change detection. [[S05]](evidence-register.md#s05) [[S06]](evidence-register.md#s06)
+Record stable dataset, recording, and input-entity IDs; release/commit and source URI; protected source root; immutable relative paths; checksums or annex keys; BIDS version when applicable; and whether acquisition history is known, partial, or unknown. A checksum identifies bytes, not acquisition or prior-processing history. (Evidence: S01, S03, S05, S06)
 
-Do not hash only a mutable path or use the derivative’s hash as proof of acquisition history. A checksum identifies bytes, while acquisition and prior processing require separate metadata evidence. [[S01]](evidence-register.md#s01) [[S03]](evidence-register.md#s03)
+Record the endpoint, required band and timing/spatial support, generalization unit, split policy, invariants, applicable harmonization decisions, and only the toolchain phases actually reached. Leave harmonization decisions empty when no alignment was proposed rather than inventing one. Each tool decision needs a stable `id`, status, observation level, hard constraints, preferences, candidates, and an explicit `failure_policy`. Use `fallback_condition=null` when the policy is `stop`. (Evidence: S03, S05, S20, S24; local provenance policy)
 
-## Objective and contract
+## Decisions and activities
 
-Record the analysis goal, endpoint, required band, timing precision, spatial support, generalization unit, split policy, invariants, phase-level toolchain decisions, and every harmonization decision. This connects implementation and preprocessing choices to the question they are intended to support and exposes conditional alternatives. [[S03]](evidence-register.md#s03) [[S05]](evidence-register.md#s05) [[S19]](evidence-register.md#s19) [[S20]](evidence-register.md#s20)
+Give each candidate a stable `id`, exact tool/version, availability, capability, read/write scope, status, reason, and evidence IDs. Use decision status `selected` only with a verified selected candidate, `planned` for an unexecuted route, and `stopped` when no route passes. Do not create an activity for a planned or stopped decision. (Evidence: S05, S24, S47, S53; local provenance policy)
 
-Each decision includes `classification`, `rationale`, `evidence_ids`, `information_loss`, and `validation`. Use evidence-register IDs rather than free-floating URLs so claims remain auditable. [[S03]](evidence-register.md#s03) [[S06]](evidence-register.md#s06)
+Every activity must reference the exact `toolchain_decision_id` and `tool_candidate_id` it executed. Its recorded software name/version must match that selected candidate. Also record order, parameters, fit scope, input/output entities, channel effect, sampling rate, shape, units, reference, rank where relevant, and evidence. This closes the link between a phase-level choice and the operation that actually ran. (Evidence: S03, S05, S08, S20; local provenance policy)
 
-For each `toolchain_decisions` phase, record the intent, least sufficient observation level, hard constraints, preferences, candidates, tool/version availability, capability, read/write scope, status, reason, evidence IDs, and fallback condition. Use `selected` only for a verified executable route and `planned` when the design is accepted but the runtime or entry points remain unverified; retain rejected candidates when they explain a consequential tradeoff. [[S05]](evidence-register.md#s05) [[S24]](evidence-register.md#s24) [[S47]](evidence-register.md#s47) [[S53]](evidence-register.md#s53)
+Use `fit_scope="none"` only for fixed operations with no estimated state. In predictive work, adaptive artifact handling, decomposition, normalization, and learned transforms must use `training_only` or `within_train_fold`. Record channel-state transitions and rank for dropping, interpolation, rereferencing, and virtual-channel construction. (Evidence: S07, S08, S12, S17, S20)
 
-## Activities
+## QC, outputs, and limitations
 
-Create one ordered activity per intervention, including inspection steps that generated authoritative derived metadata. Record start/end time, code/command, executing agent, software versions, parameters, random seed, fit scope, input/output entity IDs, channel-state changes, sampling rate, shape, units, reference, and rank before/after. PROV distinguishes used and generated entities; COBIDAS requires software and processing details. [[S03]](evidence-register.md#s03) [[S05]](evidence-register.md#s05)
+Record consequences appropriate to the contract: retained duration/epochs, rejected spans, channel states, event counts, sampling/filter behavior, fitted-model diagnostics, rank, and sensitivity branches. For every output, record its external path/URI, media type, bytes, checksum, source entity, and generating activity. Keep outputs outside the protected source tree. (Evidence: S03, S05, S19, S23)
 
-Use `fit_scope="none"` for fixed transforms with no estimated state, `training_only` for adaptive operations in predictive evaluation, and an explicit descriptive scope for non-predictive analyses. Adaptive artifact thresholds and decompositions are fitted procedures and must follow the evaluation split when estimating generalization. [[S12]](evidence-register.md#s12) [[S17]](evidence-register.md#s17) [[S20]](evidence-register.md#s20)
-
-When an activity changes channel representation, include every state transition and rank estimate. Rereferencing, virtual-channel construction, dropping, and interpolation can alter dependence and spatial meaning. [[S07]](evidence-register.md#s07) [[S08]](evidence-register.md#s08)
-
-For remote execution, represent capability preflight, source retrieval, source verification, preprocessing batches, durable cache publication, and final cache verification as distinct activities. Put runtime/image identity, ephemeral and persistent roots, selected remote and object identities, network/tool probes, resume state, and publication verification under each activity's `parameters`; a successful scheduler or notebook state is not evidence that those stages completed. [[S05]](evidence-register.md#s05) [[S50]](evidence-register.md#s50)
-
-## QC and outputs
-
-Record retained duration/epochs, rejected spans, bad/interpolated/dropped channels, event count/sample changes, sampling-rate changes, filter-response evidence, component/reconstruction diagnostics, rank changes, and sensitivity branches appropriate to the contract. Reporting both intervention and consequence supports evaluation; plausible choices can change results. [[S03]](evidence-register.md#s03) [[S19]](evidence-register.md#s19)
-
-For every output, record path/URI, media type, bytes, checksum, source entity, generating activity, and BIDS-derivative identifiers when used. For a BIDS derivative, also record the derivative dataset identity, `GeneratedBy`, `SourceDatasets`/`DatasetLinks`, and immediate file `Sources`. Keep the output root outside the protected source tree. [[S05]](evidence-register.md#s05) [[S23]](evidence-register.md#s23)
-
-For a persistent remote cache, record its durable storage URI or object identity in addition to the runtime mount path, plus the cache identity, expected shard set, record index, per-shard checksums, completion state, and independent reopen result. Keep mutable progress state distinguishable from immutable verified payload identities. [[S05]](evidence-register.md#s05) [[S50]](evidence-register.md#s50)
-
-## Limitations
-
-List unresolved metadata, assumption, affected inference, mitigation/sensitivity test, and severity. Unknown hardware filtering, acquisition reference, event meaning, or unrecoverable channels must remain limitations rather than being rewritten as completed harmonization. [[S01]](evidence-register.md#s01) [[S03]](evidence-register.md#s03)
+Keep unresolved acquisition reference, hardware filtering, event meaning, geometry, or missing channels as limitations with affected inference, mitigation, and severity. Do not rewrite unknowns as completed harmonization. (Evidence: S01, S03)
 
 ## Validation
 
-Run `python scripts/validate_ledger.py ledger.json`. Schema `1.1.0` and the validator check project invariants beyond JSON shape, including unique toolchain phases, a selected or planned candidate per phase, verified availability for `selected` routes, unique entity/activity IDs, source/derivative separation, evidence-ID syntax, channel-state vocabulary, activity links/order, mandatory rank accounting for spatial transforms, and training-only fit scope for adaptive predictive processing. These are local safeguards motivated by provenance, tool software contracts, reference/rank, and leakage evidence. [[S05]](evidence-register.md#s05) [[S08]](evidence-register.md#s08) [[S20]](evidence-register.md#s20) [[S47]](evidence-register.md#s47)
+Run:
+
+```bash
+python scripts/validate_ledger.py ledger.json
+```
+
+The CLI first validates the complete document against canonical Draft 2020-12 schema `1.2.0`, including types, enums, required fields, unexpected fields, decision-state conditions, and date-time format. Only schema-valid documents proceed to semantic checks for registered evidence, unique graph IDs, decision/candidate/activity links, exact executed software, source/output separation, activity ordering, rank accounting, and adaptive fit scope. A successful check establishes these local invariants, not scientific validity. (Evidence: S03, S05, S08, S20, S47; local validation policy)
