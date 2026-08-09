@@ -51,14 +51,22 @@ Declare the bundle `sufficient_for:<endpoint>` rather than globally sufficient. 
 
 Do not create a catch-all parser that embeds known datasets. Select a maintained tool by container and ecosystem, then constrain it to one explicit recording and exact companion files; avoid recursive enumeration, sample preloading, whole-payload hashing, or source writes during the first pass. These safeguards are especially important for archives such as the 1,643 GB TUH v2.0.1 release. [[S23]](evidence-register.md#s23) [[S40]](evidence-register.md#s40)
 
-Build a candidate set with [toolchain-selection.md](toolchain-selection.md); the following are conditional routes, not a fixed order or a requirement to invoke every framework. Stop at the least observation level that resolves the current field. [[S03]](evidence-register.md#s03) [[S23]](evidence-register.md#s23) [[S44]](evidence-register.md#s44)
+Use the observation ladder and active stage in [the process pipeline](pipeline.md); the following are conditional routes, not a fixed order or a requirement to invoke every framework. Stop at the least observation level that resolves the current field. [[S03]](evidence-register.md#s03) [[S23]](evidence-register.md#s23) [[S44]](evidence-register.md#s44)
 
 - Choose EEGDash when the dataset is indexed and catalogue metadata or its supported cache route serves the current intent; verify any local cache and embedded BIDS metadata rather than trusting catalogue fields alone. [[S31]](evidence-register.md#s31)
 - Check MOABB, TorchEEG, Braindecode, and PyHealth registries for versioned dataset adapters; inspect their source as implementation evidence and compare every baked-in assumption with official documentation and local artifacts. Do not construct a training-framework dataset during this read-only pass because construction may retrieve samples, preprocess them, or write metadata and caches. [[S23]](evidence-register.md#s23) [[S44]](evidence-register.md#s44) [[S45]](evidence-register.md#s45) [[S52]](evidence-register.md#s52) [[S53]](evidence-register.md#s53)
 - Use MNE-Python with `preload=False` for a selected EDF/GDF/EEGLAB recording and raw annotation inventory; reader types and names remain observations rather than final dataset semantics. [[S26]](evidence-register.md#s26) [[S27]](evidence-register.md#s27) [[S43]](evidence-register.md#s43)
 - Use PyEDFlib for the selected EDF when per-signal labels, physical dimensions, prefilter strings, or sampling frequencies must be checked without MNE's normalized representation. [[S42]](evidence-register.md#s42) [[S46]](evidence-register.md#s46)
 - Use `scipy.io.whosmat` or MATLAB `whos -file` for a selected MAT file before loading arrays; bind axes, units, labels, and processing stage only from the release contract. [[S03]](evidence-register.md#s03) [[S43]](evidence-register.md#s43)
-- Use EEGLAB/BIOSIG when that importer is the release-supported route, and record plugin/toolbox versions plus generated history before any transform. [[S24]](evidence-register.md#s24) [[S25]](evidence-register.md#s25)
+- Use an EEGLAB format extension only when its exact importer is the supported
+  route. Resolve whether it comes from an EEGLAB registry ZIP, an identified
+  upstream repository, or another publisher asset; record the asset hash,
+  version/commit, resolved entry points, dependencies, and generated history.
+  Metadata-only behavior is importer-specific: BIOSIG `sopen`, bva-io
+  `pop_loadbv(..., true)`, and EEGLAB `pop_loadset(..., 'info')` do not expose
+  the same representation or payload contract. [[S24]](evidence-register.md#s24)
+  [[S46]](evidence-register.md#s46) [[S63]](evidence-register.md#s63)
+  [[S64]](evidence-register.md#s64)
 
 The resulting headers, annotations, and array directories intentionally leave semantic blockers because software output does not by itself prove identity, axes, roles, units, label meanings, or processing history. Resolve those fields in the separately cited adaptation record. [[S03]](evidence-register.md#s03) [[S42]](evidence-register.md#s42) [[S43]](evidence-register.md#s43)
 
@@ -85,7 +93,7 @@ Do not treat TorchEEG's baked-in values as primary dataset documentation or tran
 
 Inspect adapter source before instantiation. Dataset construction can load complete arrays, segment samples, transform labels, apply offline transforms, and create an IO cache, so it belongs after read-only intake and must target an authorized derivative/cache directory outside the source archive. [[S23]](evidence-register.md#s23) [[S44]](evidence-register.md#s44)
 
-Use [tool-recipes-torcheeg.md](tool-recipes-torcheeg.md) for the version check, adapter audit, and guarded execution pattern. [[S44]](evidence-register.md#s44)
+Use [dataset and training-framework integrations](tools-frameworks.md) for the version check, adapter audit, and guarded execution pattern. [[S44]](evidence-register.md#s44)
 
 ## Braindecode and PyHealth as executable pipelines
 
@@ -95,7 +103,7 @@ Do not treat either framework's preprocessing as neutral loading. Braindecode pr
 
 Do not instantiate PyHealth 2.0.1 TUAB/TUEV adapters against a protected archive for discovery: their version-pinned metadata preparation can attempt writes under the supplied root before using a user-cache fallback. For approved processing, work from a bounded derivative view or copy-on-write mount and declare all explicit and implicit cache locations. [[S23]](evidence-register.md#s23) [[S40]](evidence-register.md#s40) [[S53]](evidence-register.md#s53)
 
-Use [operation-semantics.md](operation-semantics.md) before selecting a framework preprocessing, window, task, or cache primitive. Keep package-isolation and executable contract tests in the repository validation environment rather than the installable skill. [[S20]](evidence-register.md#s20) [[S52]](evidence-register.md#s52) [[S53]](evidence-register.md#s53)
+Use the pipeline stage contract before selecting a framework preprocessing, window, task, or cache primitive, then read only [dataset and training-framework integrations](tools-frameworks.md). Keep package-isolation and executable contract tests in the repository validation environment rather than the installable skill. [[S20]](evidence-register.md#s20) [[S52]](evidence-register.md#s52) [[S53]](evidence-register.md#s53)
 
 ## BCI Competition IV 2a
 

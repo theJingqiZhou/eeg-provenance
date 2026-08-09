@@ -8,11 +8,11 @@ than accumulating both. (Evidence: S57; local workflow policy)
 
 | Observation | Next branch |
 |---|---|
-| Valid BIDS root or derivative contract | `bids-eeg-1.11.1.md` |
-| Documented legacy/project release | `non-bids-intake.md` |
+| Valid BIDS root or derivative contract | [BIDS 1.11.1 EEG](bids-eeg-1.11.1.md) |
+| Documented legacy/project release | [Non-BIDS intake](non-bids-intake.md) |
 | `dsNNNNNN`, `nmNNNNNN`, or `onNNNNNN` | Resolve the provider record/version before transport; EEGDash is a catalogue/access option, not owner identity |
-| Remote or ephemeral execution | Add `remote-cache-execution.md` only after the source branch is known |
-| Source/forward-model endpoint | Add `anatomy-forward-model.md`; otherwise omit anatomy |
+| Remote or ephemeral execution | Add the top-level remote-execution branch only after the source branch is known |
+| Source/forward-model endpoint | Add the top-level anatomy branch; otherwise omit anatomy |
 
 Evidence: S01, S03, S31, S50, S51.
 

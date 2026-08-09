@@ -145,7 +145,7 @@ Use `Sources` for immediate inputs rather than flattening the entire ancestry: i
 
 ## Validation boundary
 
-Run the official BIDS Validator for conformance and record its version, schema target, configuration, warnings, and complete result. Use PyBIDS for entity/inheritance queries, MNE-BIDS for a lazy EEG-aware view, and EEG-BIDS for a MATLAB/EEGLAB cross-check when needed; none replaces the others or establishes scientific validity. [[S01]](evidence-register.md#s01) [[S25]](evidence-register.md#s25) [[S26]](evidence-register.md#s26) [[S47]](evidence-register.md#s47) [[S48]](evidence-register.md#s48)
+Run the official BIDS Validator for conformance and record its version, schema target, configuration, warnings, and complete result. Use PyBIDS for entity/inheritance queries, MNE-BIDS for a lazy EEG-aware view, and EEG-BIDS for a MATLAB/EEGLAB representation when needed; none replaces the others or establishes scientific validity. EEG-BIDS translates selected source metadata into `EEG.BIDS` and `STUDY.datasetinfo`; preserve the source sidecars because the STUDY is not a byte-faithful BIDS metadata copy. [[S01]](evidence-register.md#s01) [[S25]](evidence-register.md#s25) [[S26]](evidence-register.md#s26) [[S47]](evidence-register.md#s47) [[S48]](evidence-register.md#s48) [[S63]](evidence-register.md#s63)
 
 Preserve validator failures and warnings in the Data Intake Report. Do not “repair” a protected source tree during intake; plan corrections as a new curated dataset or derivative with explicit source identities. [[S01]](evidence-register.md#s01) [[S23]](evidence-register.md#s23)
 
