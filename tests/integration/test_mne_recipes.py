@@ -3,6 +3,7 @@ import warnings
 from pathlib import Path
 
 import mne
+import numpy as np
 import pytest
 
 from tools.verify_mne_recipes import run_verification
@@ -16,6 +17,34 @@ def test_synthetic_mne_recipe_contract() -> None:
     assert result["ica_components"] == 5
     assert result["interpolated_channel_retained_in_bads"] == ["P4"]
     assert result["rank"]["average_reference"] <= result["rank"]["native"]
+
+
+def test_mne_epochs_and_in_place_resample_contract() -> None:
+    info = mne.create_info(["C3", "C4"], sfreq=200, ch_types="eeg")
+    raw = mne.io.RawArray(np.zeros((2, 1000)), info, verbose="ERROR")
+    events = np.array([[200, 0, 1], [600, 0, 1]])
+    original_shape = raw.get_data().shape
+    original_rate = raw.info["sfreq"]
+
+    epochs = mne.Epochs(
+        raw,
+        events,
+        event_id={"stimulus": 1},
+        tmin=-0.1,
+        tmax=0.2,
+        baseline=None,
+        preload=False,
+        verbose="ERROR",
+    )
+    transformed = raw.copy().load_data()
+    returned = transformed.resample(100, verbose="ERROR")
+
+    assert epochs.preload is False
+    assert raw.get_data().shape == original_shape
+    assert raw.info["sfreq"] == original_rate
+    assert returned is transformed
+    assert transformed.info["sfreq"] == 100
+    assert transformed.n_times == 500
 
 
 @pytest.mark.archive

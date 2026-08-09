@@ -5,7 +5,7 @@ Use EEGDash as a catalogue and access layer, not as the owner of OpenNeuro or Ne
 ## Contents
 
 - [Route the accession before selecting a tool](#route-the-accession-before-selecting-a-tool)
-- [Pinned environment](#pinned-environment)
+- [Runtime contract](#runtime-contract)
 - [Metadata first](#metadata-first)
 - [One OpenNeuro recording](#one-openneuro-recording)
 - [One NeMAR recording](#one-nemar-recording)
@@ -21,13 +21,12 @@ Query provider and EEGDash metadata first, compare version/snapshot, license, so
 
 Do not construct a repository URL solely from the accession. Use the provider-published URL and pin the declared snapshot, tag, commit, or release before bounded retrieval. [[S05]](evidence-register.md#s05) [[S51]](evidence-register.md#s51)
 
-## Pinned environment
+## Runtime contract
 
-The repository pins EEGDash 0.8.4 in a dedicated dependency group because catalogue, backend, and cache behavior are version-specific software contracts. [[S31]](evidence-register.md#s31)
+The repository exercised EEGDash 0.8.4 in a dedicated Python 3.12 environment because catalogue, backend, and cache behavior are version-specific software contracts. On a target host, first apply the [runtime compatibility matrix](runtime-compatibility.md): keep a sufficient installed stack, and create a separate site-approved environment only when the selected operation is incompatible. `uv` is not required. [[S31]](evidence-register.md#s31) [[S58]](evidence-register.md#s58) [[S61]](evidence-register.md#s61)
 
 ```bash
-uv sync --group validation --group eegdash --locked
-uv run python -c "import eegdash; print(eegdash.__version__)"
+python -c "import eegdash; print(eegdash.__version__)"
 ```
 
 ## Metadata first
@@ -35,7 +34,7 @@ uv run python -c "import eegdash; print(eegdash.__version__)"
 `EEGDash.find()` transfers metadata records but no sample arrays; query those records before constructing a signal-bearing dataset, and retain the raw record rather than copying only selected fields. [[S05]](evidence-register.md#s05) [[S31]](evidence-register.md#s31)
 
 ```bash
-uv run python scripts/eegdash_intake.py \
+python scripts/eegdash_intake.py \
   --dataset ds003061 --subject 001 --task P300 --run 1 \
   --catalogue-only
 ```
@@ -47,7 +46,7 @@ The intake command requests at most two records so zero matches and ambiguous fi
 When EEGDash is selected for an OpenNeuro `ds*` accession, the script constructs the lazy dataset, verifies that the exact subject/task/session/run selectors resolve to one recording, and only then accesses `.raw`; EEGDash stores the BIDS-shaped result under `cache_dir/<dataset_id>`. [[S31]](evidence-register.md#s31)
 
 ```bash
-uv run python scripts/eegdash_intake.py \
+python scripts/eegdash_intake.py \
   --dataset ds003061 --subject 001 --task P300 --run 1 \
   --cache-dir .workbench/eegdash-cache --download-one
 ```
@@ -86,11 +85,11 @@ Do not initialize or fetch annex content inside a protected archive during intak
 Offline mode bypasses the catalogue, selects one local BIDS recording, hashes its payload and sidecars, and profiles only bounded signal windows. It reports structure, channel types, geometry coverage, annotations, non-finite values, robust amplitude summaries, a sampled numerical rank, and a descriptive line-to-neighbor power ratio without applying pass/fail thresholds. [[S03]](evidence-register.md#s03) [[S17]](evidence-register.md#s17) [[S31]](evidence-register.md#s31)
 
 ```bash
-uv run python scripts/eegdash_intake.py \
+python scripts/eegdash_intake.py \
   --dataset ds003061 --subject 001 --task P300 --run 1 \
   --cache-dir .workbench/eegdash-cache --offline-qc
 
-uv run python scripts/eegdash_intake.py \
+python scripts/eegdash_intake.py \
   --dataset nm000166 --subject 001 --session 01 --task aep \
   --cache-dir .workbench/eegdash-cache --offline-qc
 ```
@@ -112,6 +111,8 @@ These observations were reproduced on 2026-08-08 with EEGDash 0.8.4, MNE 1.12.1,
 | Geometry | 64/64 EEG channels had finite non-zero positions | 64/64 EEG channels had finite non-zero positions |
 | Local metadata conflict | discovery record `nchans=75`, loaded object 79; record channel-name list length 79 | discovery record `ntimes=58,999`, loaded object 59,000 |
 | Sampled numeric EEG rank | 64 | 63 |
+
+Evidence: S31–S33.
 
 A 2026-08-09 cross-view with EEGLAB 2026.0.0 and EEG-BIDS 10.5 imported the same ds003061 object as 79 channels × 194,048 samples and preserved all 863 `events.tsv` rows, including three rows whose value was `ignore`; the MNE view above exposed 860 annotations. Treat this as a representation difference to reconcile from the BIDS event table and each reader's mapping, not as evidence that either count is universally correct. The fully parameterized import wrote a SET/FDT/STUDY only to a temporary derivative tree and left the bounded cache inventory unchanged. [[S25]](evidence-register.md#s25) [[S31]](evidence-register.md#s31) [[S32]](evidence-register.md#s32) [[S56]](evidence-register.md#s56)
 

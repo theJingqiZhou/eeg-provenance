@@ -1,108 +1,117 @@
 ---
 name: eeg-provenance
-description: Provenance-aware EEG dataset intake and preprocessing for BIDS and documented non-BIDS EDF/GDF/MAT/CNT/SET data. Select acquisition, inspection, processing, and export tools from task intent, evidence, hard constraints, and user preferences; recover missing dataset documentation; acquire OpenNeuro and NeMAR accessions through provider tools, EEGDash, DataLad, or git-annex; prepare remote caches; harmonize channels and montages; execute MNE or EEGLAB; and produce QC and reproducible ledgers. Use when onboarding or comparing EEG datasets, receiving dsNNNNNN, nmNNNNNN, or onNNNNNN identifiers, resolving BIDS inheritance or legacy release contracts, choosing tools, auditing or converting data, handling MATLAB v7.3 without MATLAB, preparing an ephemeral server, or deciding filters, reference, interpolation, resampling, and artifact handling. Do not use for clinical interpretation or model selection.
+description: Provenance-aware EEG data intake, acquisition/tool selection, preprocessing, QC, and auditable handoff for BIDS and documented non-BIDS EDF/GDF/MAT/CNT/SET. Use for OpenNeuro/NeMAR ds*/nm*/on* accessions, release-metadata recovery, BIDS inheritance, source-safe local or remote caches, pinned or legacy Python compatibility, MNE/EEGLAB or dataset-framework routing, and decisions about channels, reference, filters, artifacts, resampling, epochs/windows, labels, and adaptive fit scope. Not for clinical interpretation or decoder/model selection.
 ---
 
 # EEG Provenance
 
-Build an auditable EEG preprocessing decision before changing samples. Treat every transform as an evidence-bounded intervention with explicit inputs, parameters, fit scope, channel effect, rank effect, outputs, and limitations. [[S03]](references/evidence-register.md#s03) [[S05]](references/evidence-register.md#s05)
+Build the smallest evidence-backed workflow that answers the current EEG data
+question. Escalate from inspection to transformation only when the requested
+endpoint needs it. (Evidence: S57; local workflow policy)
 
-## Non-negotiable rules
+## Kernel invariants
 
-1. Preserve source bytes. Write derivatives, caches, reports, and temporary files outside the source dataset. BIDS derivatives are distinct from raw source data, and the EEG-BIDS importer warns that writing its generated STUDY files into a BIDS archive breaks conformance. [[S23]](references/evidence-register.md#s23) [[S25]](references/evidence-register.md#s25)
-2. Keep unknown acquisition or preprocessing history unknown. Do not infer it from current samples or filenames; record the missing evidence and its consequences. COBIDAS-MEEG and EEG-BIDS require acquisition and processing metadata because signal arrays alone do not preserve that history. [[S01]](references/evidence-register.md#s01) [[S03]](references/evidence-register.md#s03)
-3. Complete the Data Intake Report and Preprocessing Contract before executing interventions. Report parameters and deviations at the level needed to reproduce the derivative. [[S03]](references/evidence-register.md#s03) [[S05]](references/evidence-register.md#s05)
-4. For predictive evaluation, fit learned or data-adaptive preprocessing only on the training partition, nested within resampling when tuning it. Leakage and non-independent cross-validation can inflate estimated generalization. [[S20]](references/evidence-register.md#s20) [[S21]](references/evidence-register.md#s21) [[S22]](references/evidence-register.md#s22)
-5. Preserve channel identity. Label every channel as `native`, `bad`, `missing`, `dropped`, `interpolated`, or `virtual`; never present an estimate or algebraic channel as a native measurement. Spatial interpolation estimates signals from other sensors and referencing changes the representation and rank. [[S07]](references/evidence-register.md#s07) [[S08]](references/evidence-register.md#s08)
-6. Reject a universal “gold-standard pipeline.” Choose interventions from the analysis objective, acquisition facts, retained bandwidth, geometry, reference, and validation design; EEG outcomes can vary materially across plausible preprocessing choices. [[S18]](references/evidence-register.md#s18) [[S19]](references/evidence-register.md#s19)
-7. Search for missing dataset evidence. An absent attachment is not a reason to abandon intake: inspect exact local release artifacts and actively search official dataset pages, versioned README/release notes, primary papers, codebooks, and conversion code; record unsuccessful routes and block only the decisions that remain unsupported. [[S03]](references/evidence-register.md#s03) [[S06]](references/evidence-register.md#s06)
-8. Select tools per phase from intent and hard constraints, not familiarity or installation alone. Record the minimum observation level, candidates, versions, read/write scope, accepted/rejected reasons, and fallback condition; a catalogue, validator, metadata indexer, signal reader, and processing framework are not interchangeable roles. [[S05]](references/evidence-register.md#s05) [[S31]](references/evidence-register.md#s31) [[S47]](references/evidence-register.md#s47) [[S48]](references/evidence-register.md#s48)
+1. Preserve source bytes. Put reports, caches, temporary files, and derivatives
+   outside the source tree. (Evidence: S23, S25)
+2. Keep unknown acquisition or preprocessing history unknown while actively
+   searching publisher records, release documents, papers, codebooks, and
+   conversion code. (Evidence: S01, S03, S06)
+3. Preserve representation identity: distinguish channels from electrodes and
+   native, bad, missing, dropped, interpolated, and virtual channels. Fit every
+   adaptive operation inside the declared training scope. (Evidence: S07, S08,
+   S20, S21, S22)
+4. Reject universal pipelines. Tie each operation to the endpoint, input and
+   output semantics, assumptions, side effects, fit state, and QC. (Evidence:
+   S03, S18, S19)
 
-## Required workflow
+## Choose the work mode
 
-### 1. Produce a Data Intake Report
+- **Inspect** — answer one bounded identity, metadata, header, event, channel,
+  or capability question. Return an **Inspection Finding** with observations,
+  unknowns, evidence, and the tool/read scope used. Do not create a full ledger
+  or enumerate future phases unless requested.
+- **Design** — return a **Preprocessing Contract** for the requested endpoint,
+  current-phase tool decisions, unresolved facts, alternatives, and stop
+  conditions. Mark unexecuted routes `planned`; do not invent QC or outputs.
+- **Execute** — return the full **Data Intake Report**, **Preprocessing
+  Contract**, and **Provenance Ledger and QC**. Add decisions progressively,
+  immediately before each phase is executed.
 
-Before the first tool invocation, use [references/toolchain-selection.md](references/toolchain-selection.md) to define the current phase intent, least sufficient observation level, hard constraints, user preferences, candidates, side effects, and fallback. Run `python scripts/probe_toolchain.py` for a non-network availability inventory, then perform candidate-specific version/function/source/write-scope probes before marking a route `selected`; availability alone is insufficient. [[S05]](references/evidence-register.md#s05) [[S24]](references/evidence-register.md#s24) [[S47]](references/evidence-register.md#s47) [[S52]](references/evidence-register.md#s52)
+Evidence: S03, S05; local workflow policy.
 
-Inventory the immutable source, dataset and recording identifiers, data format, sidecars, sampling rate, units, channel types, reference, line frequency, hardware/software filters, event semantics, electrode coordinates and coordinate frame, existing bad-channel annotations, and known prior processing. Preserve conflicts and unknowns instead of silently resolving them. [[S01]](references/evidence-register.md#s01) [[S02]](references/evidence-register.md#s02)
+Do not silently upgrade modes. A narrow request remains narrow even when a full
+dataset is available. (Evidence: S03, S05; local workflow policy)
 
-Use [references/dataset-intake.md](references/dataset-intake.md) for the common checklist and source-contract routing. For a BIDS source or derivative, apply the pinned core, inheritance, EEG, events, coordinates, and derivative rules in [references/bids-eeg-1.11.1.md](references/bids-eeg-1.11.1.md), then use the maintained validator/PyBIDS/MNE-BIDS/EEG-BIDS stack in [references/tool-recipes-bids.md](references/tool-recipes-bids.md). For non-BIDS layouts, use the documentation-recovery, endpoint sufficiency, established-tool routing, and adaptation-record rules in [references/non-bids-intake.md](references/non-bids-intake.md). [[S01]](references/evidence-register.md#s01) [[S03]](references/evidence-register.md#s03) [[S23]](references/evidence-register.md#s23) [[S47]](references/evidence-register.md#s47) [[S48]](references/evidence-register.md#s48)
+## Workflow
 
-When the endpoint includes EEG source imaging, a forward solution, or head modeling, use [references/anatomy-forward-model.md](references/anatomy-forward-model.md) to locate raw T1w anatomy, released reconstructions, surfaces, segmentations, sensor-to-MRI transforms, and BEM/FEM assets. Keep this as a separate readiness gate: sensor geometry or a structural MRI alone is not a complete forward-model input set. [[S34]](references/evidence-register.md#s34) [[S36]](references/evidence-register.md#s36)
+1. State the current intent, endpoint, protected source, permitted writes, and
+   least sufficient observation level.
+2. Read exactly one intake branch: BIDS, non-BIDS, or the short common checklist
+   when the source contract is still unknown. Do not preload samples to answer a
+   catalogue, tree, sidecar, or native-header question. (Evidence: S01, S23,
+   S31, S42, S46)
+3. Use the tool selector for the current phase only. Form one or two viable
+   candidates first; run a filtered capability probe only when availability or
+   version uncertainty changes the choice. On a pinned or unfamiliar Python
+   host, apply the runtime matrix before resolving or installing anything.
+   Preferences rank candidates only after hard gates pass. (Evidence: S05,
+   S24, S47, S52, S53, S58–S61)
+4. Before transforming data, use the operation card and then only the selected
+   implementation recipe. Record semantic input/output, hidden assumptions,
+   mutation/cache behavior, fit state, parameters, and expected QC.
+5. Execute within the authorized write boundary. For execute mode, link every
+   activity to its selected decision and candidate, then validate the ledger
+   with `python scripts/validate_ledger.py ledger.json`.
 
-Treat OpenNeuro `dsNNNNNN` and NeMAR `nmNNNNNN` or `onNNNNNN` strings as provider accessions. EEGDash is a catalogue/access option rather than the provenance owner. Preserve the supplied accession, resolve provider metadata and version or snapshot, then choose among EEGDash, provider CLI/direct transfer, or DataLad/git-annex according to the verified backend and execution environment. Do not infer an OpenNeuro `ds*` cross-reference from a NeMAR `on*` prefix without provider metadata. [[S31]](references/evidence-register.md#s31) [[S37]](references/evidence-register.md#s37) [[S51]](references/evidence-register.md#s51)
+## Working-set policy
 
-When preprocessing will run on a remote server, hosted notebook, or ephemeral VM, use [references/remote-cache-execution.md](references/remote-cache-execution.md) to preflight network, tooling, disk, quota, and persistence; acquire selected source objects directly on the compute side when authorized; publish verified resumable cache shards to durable storage; and preserve failure states. Do not assume that a repository clone, scheduler submission, or notebook start implies data content, git-annex, outbound networking, or persistent storage is available. [[S37]](references/evidence-register.md#s37) [[S50]](references/evidence-register.md#s50)
+Target `SKILL.md + one intake reference + one decision or implementation
+reference` for ordinary work. Do not load both BIDS and non-BIDS branches, local
+and remote branches, MNE and EEGLAB recipes, or framework recipes unless the
+current task genuinely crosses them. Do not load anatomy guidance without a
+source/forward-model endpoint. These are engineering budgets, not scientific
+thresholds; revise them through evals. Official skill guidance confirms that
+the full `SKILL.md` enters context after activation and recommends progressive
+disclosure. (Evidence: S57; local workflow policy)
 
-### 2. State the objective and invariants
-
-Specify the scientific endpoint, required temporal and spectral support, epoch definition, acceptable latency error, spatial quantities, native information that must survive, generalization unit, and allowed derivative outputs. These constraints determine whether filtering, resampling, referencing, interpolation, or artifact correction is admissible. [[S03]](references/evidence-register.md#s03) [[S09]](references/evidence-register.md#s09)
-
-### 3. Produce a Preprocessing Contract
-
-Complete a Toolchain Decision Record for every execution phase now that the endpoint is known: acquisition, conformance, metadata/native-header inspection, signal read, preprocessing, cache/export, and QC as applicable. A phase with no candidate that satisfies every hard constraint is a stop condition; keep an unverified design route `planned`, not `selected`. [[S03]](references/evidence-register.md#s03) [[S23]](references/evidence-register.md#s23) [[S50]](references/evidence-register.md#s50)
-
-For each dataset dimension, classify the proposed alignment as:
-
-- `must_harmonize`: incompatible representations would make the intended comparison undefined or invalid; document the target and evidence. [[S01]](references/evidence-register.md#s01) [[S08]](references/evidence-register.md#s08)
-- `may_harmonize`: the intervention may improve comparability but discards or models information; predeclare alternatives or sensitivity analyses. [[S07]](references/evidence-register.md#s07) [[S19]](references/evidence-register.md#s19)
-- `cannot_harmonize`: the relevant acquisition fact or information is absent and cannot be recovered by preprocessing; expose the limitation or narrow the estimand. [[S03]](references/evidence-register.md#s03) [[S19]](references/evidence-register.md#s19)
-
-Use [references/harmonization.md](references/harmonization.md), [references/channels-montages.md](references/channels-montages.md), and [references/preprocessing-interventions.md](references/preprocessing-interventions.md). Include an explicit “no intervention” option whenever it is scientifically admissible. [[S18]](references/evidence-register.md#s18) [[S19]](references/evidence-register.md#s19)
-
-Use [references/research-scenarios.md](references/research-scenarios.md) for ERP, single-trial BCI, cross-session biometrics, cross-task generalization, and the ds003061/nm000166 comparison; its branches remain conditional on the declared endpoint. [[S19]](references/evidence-register.md#s19) [[S20]](references/evidence-register.md#s20)
-
-### 4. Execute with a ledger
-
-Create the ledger from [assets/provenance-ledger.template.json](assets/provenance-ledger.template.json). Record toolchain decisions, source entities, activities in order, executing software and versions, exact parameters, random seeds, fit scope, input/output shapes, sample rate, units, channel states, reference, bad spans, rank estimates, QC, output hashes, and unresolved limitations. Use W3C PROV’s Entity–Activity–Agent relations as the conceptual model without claiming full PROV-O conformance. Treat BIDS Derivatives conformance as a separate file, naming, metadata, and provenance contract; the ledger alone does not confer it. [[S05]](references/evidence-register.md#s05) [[S23]](references/evidence-register.md#s23)
-
-Validate the ledger:
+Never read the full evidence register for a routine claim. Query only the IDs
+used by the active reference. (Evidence: S57; local workflow policy)
 
 ```bash
-python scripts/validate_ledger.py path/to/ledger.json
+python scripts/evidence_lookup.py S03 S20 S52
 ```
 
-Use [references/provenance-ledger.md](references/provenance-ledger.md) for field semantics.
+## Resource map
 
-### 5. Produce QC and limitations
+Load only a resource whose condition is true:
 
-Compare before/after summaries appropriate to the declared objective; at minimum report data loss, channel-state transitions, event changes, sampling-rate changes, reference, rank, and intervention-specific diagnostics. Keep algorithm scores separate from scientific acceptability, and report sensitivity to consequential conditional choices. [[S03]](references/evidence-register.md#s03) [[S17]](references/evidence-register.md#s17) [[S19]](references/evidence-register.md#s19)
+- Unknown source contract: [common intake](references/dataset-intake.md).
+- BIDS source: [BIDS 1.11.1 EEG contract](references/bids-eeg-1.11.1.md); read
+  [BIDS tool recipes](references/tool-recipes-bids.md) only for execution.
+- Non-BIDS source: [non-BIDS intake](references/non-bids-intake.md).
+- Tool choice: [toolchain selection](references/toolchain-selection.md).
+- Pinned, legacy, or conflicting Python stack: [runtime compatibility](references/runtime-compatibility.md).
+- Processing primitive choice: [operation semantics](references/operation-semantics.md).
+- Channels/reference/interpolation: [channels and montages](references/channels-montages.md).
+- Cross-source alignment: [harmonization](references/harmonization.md).
+- Filtering/resampling/artifacts: [preprocessing interventions](references/preprocessing-interventions.md).
+- MNE implementation: [MNE recipes](references/tool-recipes-mne.md).
+- MATLAB/EEGLAB implementation: [EEGLAB recipes](references/tool-recipes-eeglab.md).
+- Accession or EEGDash route: [EEGDash recipes](references/tool-recipes-eegdash.md).
+- TorchEEG adapter/cache route: [TorchEEG recipes](references/tool-recipes-torcheeg.md).
+- Remote or ephemeral compute: [remote cache execution](references/remote-cache-execution.md).
+- MRI, BEM, or FEM readiness: [anatomy and forward models](references/anatomy-forward-model.md).
+- Execute-mode record: [provenance ledger semantics](references/provenance-ledger.md).
+- Claim source details: [evidence register](references/evidence-register.md), accessed
+  through `scripts/evidence_lookup.py` rather than loaded wholesale.
 
-Return exactly three named artifacts:
-
-1. **Data Intake Report** — observed facts, conflicts, unknowns, and source identities.
-2. **Preprocessing Contract** — objectives, invariants, phase-level toolchain decisions, harmonization classes, ordered interventions, fit scope, alternatives, and stop conditions.
-3. **Provenance Ledger and QC** — executed activities, versioned parameters, channel/rank/shape transitions, diagnostics, outputs, and limitations. [[S03]](references/evidence-register.md#s03) [[S05]](references/evidence-register.md#s05)
-
-If a stop condition is reached or the request is design-only, still return all three names, but mark execution in **Provenance Ledger and QC** as `not_executed`; record the refusal/stop evidence and never invent transforms, outputs, or post-transform QC. [[S03]](references/evidence-register.md#s03) [[S05]](references/evidence-register.md#s05)
-
-## Evidence discipline
-
-Tag important decisions with one of these evidence classes and cite an evidence-register ID:
-
-- `HARD_INVARIANT`: a mathematical, physical, or data-model constraint. [[S01]](references/evidence-register.md#s01) [[S08]](references/evidence-register.md#s08)
-- `CONSENSUS_REPORTING`: a community reporting or interoperability recommendation. [[S02]](references/evidence-register.md#s02) [[S03]](references/evidence-register.md#s03)
-- `CONDITIONAL_EVIDENCE`: empirical evidence whose applicability depends on task, data, or estimator. [[S12]](references/evidence-register.md#s12) [[S18]](references/evidence-register.md#s18)
-- `EMPIRICAL_BASELINE`: a documented starting point to validate locally, not a universal default. [[S04]](references/evidence-register.md#s04) [[S17]](references/evidence-register.md#s17)
-- `SOFTWARE_CONTRACT`: behavior documented for a named software version; record the actual version used. [[S14]](references/evidence-register.md#s14) [[S24]](references/evidence-register.md#s24)
-- `LOCAL_POLICY`: a conservative project safeguard; label it as policy and cite the risk it controls. [[S20]](references/evidence-register.md#s20) [[S23]](references/evidence-register.md#s23)
-
-Use [references/evidence-register.md](references/evidence-register.md) as the sole claim-source registry. If a necessary claim is absent, report the evidence gap and stop short of presenting the claim as supported; do not invent a source or silently extend the registry. [[S03]](references/evidence-register.md#s03)
-
-## Tool routing
-
-- Start with [references/toolchain-selection.md](references/toolchain-selection.md) to choose a composed acquisition/inspection/processing route from the phase intent, source/release, minimum observation level, hard constraints, preferences, candidate probes, read/write scope, and fallback. Run `scripts/probe_toolchain.py` to inventory availability without treating installation as suitability. [[S05]](references/evidence-register.md#s05) [[S31]](references/evidence-register.md#s31) [[S47]](references/evidence-register.md#s47) [[S53]](references/evidence-register.md#s53)
-- Use [references/tool-recipes-mne.md](references/tool-recipes-mne.md) for MNE-Python and MNE-BIDS.
-- Use [references/anatomy-forward-model.md](references/anatomy-forward-model.md) for subject-anatomy discovery, FreeSurfer derivative checks, coregistration inputs, and BEM/FEM readiness.
-- Use [references/tool-recipes-eeglab.md](references/tool-recipes-eeglab.md) for MATLAB, EEGLAB, and the EEG-BIDS plugin.
-- Use [references/tool-recipes-eegdash.md](references/tool-recipes-eegdash.md) for accession-first `ds*`/`nm*`/`on*` route selection, EEGDash metadata queries and supported downloads, provider/DataLad/git-annex alternatives, offline loading, and descriptive QC. [[S31]](references/evidence-register.md#s31) [[S51]](references/evidence-register.md#s51)
-- Use [references/tool-recipes-torcheeg.md](references/tool-recipes-torcheeg.md) to inspect a versioned built-in adapter as a hypothesis source or to stage an authorized derivative cache only after the local release contract is verified. [[S44]](references/evidence-register.md#s44)
-- Use [references/tool-recipes-braindecode-pyhealth.md](references/tool-recipes-braindecode-pyhealth.md) when Braindecode or PyHealth may supply acquisition adapters, preprocessing/window/task machinery, persistent model-ready caches, or reusable decoder interfaces. Treat every baked-in transform and processor fit as an auditable intervention; model availability is not model-selection evidence. [[S20]](references/evidence-register.md#s20) [[S52]](references/evidence-register.md#s52) [[S53]](references/evidence-register.md#s53)
-- Use [references/tool-recipes-bids.md](references/tool-recipes-bids.md) for official validation, inherited metadata queries, BIDS-aware lazy reads, derivative/anatomy discovery, and annex-backed validation. [[S26]](references/evidence-register.md#s26) [[S47]](references/evidence-register.md#s47) [[S48]](references/evidence-register.md#s48)
-- Use [references/remote-cache-execution.md](references/remote-cache-execution.md) for compute-side acquisition, runtime preflight, verified standalone git-annex fallback, bounded fetch/process/release loops, durable cache publication, and restart-safe failure handling. [[S37]](references/evidence-register.md#s37) [[S50]](references/evidence-register.md#s50)
-- Run `scripts/eegdash_intake.py --help` for guarded catalogue, one-recording download, and offline-QC modes. [[S31]](references/evidence-register.md#s31)
-- Run `scripts/probe_eeglab.m` in the active MATLAB session before selecting an EEGLAB route; MATLAB executable or integration availability alone does not prove that EEGLAB and required plugins resolve. [[S24]](references/evidence-register.md#s24) [[S25]](references/evidence-register.md#s25) [[S30]](references/evidence-register.md#s30)
+Evidence: S24–S31, S37, S42–S61; local routing policy.
 
 ## Stop conditions
 
-Stop before transformation when no tool candidate passes the phase hard constraints, the source location is writable but no derivative destination is defined, the recording identity is ambiguous, channel units or types are unresolved, required geometry/reference information is missing for a spatial operation, event meaning is unresolved for event-locked analysis, or the evaluation split cannot contain adaptive fitting. Search and report available evidence first; absence of a user attachment alone is not a stop condition. These are decision blockers, not invitations to guess. [[S01]](references/evidence-register.md#s01) [[S03]](references/evidence-register.md#s03) [[S06]](references/evidence-register.md#s06) [[S20]](references/evidence-register.md#s20) [[S50]](references/evidence-register.md#s50)
+Stop only the affected phase when identity is ambiguous, required units/types/
+reference/events/geometry are unresolved, no candidate passes the hard gates,
+adaptive fitting cannot respect the evaluation split, or no safe output boundary
+exists. Report what is known, the failed evidence route, and what would unblock
+the phase; do not guess or weaken the source boundary. (Evidence: S01, S03, S20,
+S23)

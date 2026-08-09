@@ -76,10 +76,17 @@ def test_long_references_have_contents_navigation() -> None:
             assert re.search(r"^## (?:Contents|Table of contents)$", text, re.MULTILINE), path
 
 
-def test_legacy_mirrors_are_absent() -> None:
+def test_legacy_skill_mirrors_are_absent() -> None:
     assert not (SKILL_ROOT / "README.md").exists()
     assert not (REPO_ROOT / ".agents").exists()
-    assert not (REPO_ROOT / ".claude").exists()
+    claude_root = REPO_ROOT / ".claude"
+    if claude_root.exists():
+        local_files = {
+            path.relative_to(claude_root)
+            for path in claude_root.rglob("*")
+            if path.is_file()
+        }
+        assert local_files <= {Path("settings.local.json")}
     assert not (SKILL_ROOT / "references" / "MNE Resources").exists()
     assert not (SKILL_ROOT / "references" / "NumPy Resources").exists()
     assert not (SKILL_ROOT / "references" / "SciPy Resources").exists()

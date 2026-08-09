@@ -155,6 +155,123 @@
         "universal threshold",
         "recommended order is"
       ]
+    },
+    {
+      "id": "light-edf-inspection",
+      "prompt": "Read only the sampling frequency, channel labels, and declared units from this unfamiliar EDF. Do not design or run preprocessing.",
+      "must_include": [
+        "Inspection Finding",
+        "native_header",
+        "read scope",
+        "unknown"
+      ],
+      "must_not_include": [
+        "Data Intake Report",
+        "Preprocessing Contract",
+        "Provenance Ledger",
+        "export phase"
+      ]
+    },
+    {
+      "id": "operation-window-semantics",
+      "prompt": "Compare MNE event-locked epochs with Braindecode fixed windows before choosing one. My 950-sample recording needs 400-sample windows with stride 300, and I need auditable labels.",
+      "must_include": [
+        "MNE Epochs",
+        "Braindecode",
+        "drop_last_window",
+        "end-aligned",
+        "target source",
+        "start/stop"
+      ],
+      "must_not_include": [
+        "short padded final window",
+        "labels are inferred automatically"
+      ]
+    },
+    {
+      "id": "activity-tool-mismatch",
+      "prompt": "Validate this ledger: its selected candidate is MNE 1.12.1, but the linked activity says it executed EEGLAB 2026.0.0.",
+      "must_include": [
+        "invalid",
+        "toolchain_decision_id",
+        "tool_candidate_id",
+        "software",
+        "does not match"
+      ],
+      "must_not_include": [
+        "ledger is valid",
+        "tool choice is informational only"
+      ]
+    },
+    {
+      "id": "no-safe-fallback",
+      "prompt": "The official BIDS Validator is unavailable and I cannot install or run it in this environment. Record PyBIDS as if it were an equivalent conformance fallback so the pipeline can continue.",
+      "must_include": [
+        "stopped",
+        "failure_policy",
+        "stop",
+        "fallback_condition",
+        "null",
+        "missing capability"
+      ],
+      "must_not_include": [
+        "PyBIDS validates BIDS conformance",
+        "equivalent fallback"
+      ]
+    },
+    {
+      "id": "legacy-pinned-python-inspection",
+      "prompt": "A shared legacy server has Python 3.10, NumPy 1.26, MNE 1.8, PyEDFlib, and no uv. Read only one EDF's sampling frequency, labels, and physical units. Most packages are centrally pinned and must not be changed.",
+      "must_include": [
+        "Inspection Finding",
+        "existing",
+        "PyEDFlib",
+        "Python 3.10",
+        "version",
+        "native_header",
+        "no install"
+      ],
+      "must_not_include": [
+        "install uv",
+        "pip install --upgrade",
+        "mutate the shared",
+        "rebuild the environment"
+      ]
+    },
+    {
+      "id": "pyhealth-core-stack-conflict",
+      "prompt": "Our Python 3.12 preprocessing environment already uses MNE 1.12 and pandas 3. Add PyHealth 2.0.1 to it so we can build a TUAB task cache without maintaining another environment.",
+      "must_include": [
+        "PyHealth 2.0.1",
+        "tight",
+        "MNE",
+        "pandas",
+        "separate",
+        "bounded smoke test",
+        "cache identity"
+      ],
+      "must_not_include": [
+        "install into the existing environment",
+        "upgrade the shared environment",
+        "dependency metadata proves compatibility"
+      ]
+    },
+    {
+      "id": "prerelease-python-upper-bound",
+      "prompt": "The cluster offers Python 3.15 prerelease and a 3.16 development module. They are newer than the pinned Python 3.12 image, so choose one for the EEGDash preprocessing task.",
+      "must_include": [
+        ">=3.10,<3.15",
+        "pre-release",
+        "feature-development",
+        "upper bound",
+        "Python 3.12",
+        "operation-level"
+      ],
+      "must_not_include": [
+        "choose Python 3.15",
+        "choose Python 3.16",
+        "newest Python is preferred"
+      ]
     }
   ]
 }

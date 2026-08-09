@@ -85,7 +85,7 @@ Treat generated names, inferred types, a recording-wide sampling rate, and annot
 
 ## Route MATLAB MAT files by version
 
-Install the tested HDF5 route with `pip install "mne[hdf5]==1.12.1"` or the locked project environment. In MNE 1.12.1 this extra supplies `h5io` and `pymatreader`, with `h5py` supplied transitively; the project exercise resolved h5io 0.2.5, h5py 3.16.0, and pymatreader 1.2.3. [[S49]](evidence-register.md#s49)
+First probe whether the installed MNE/HDF5 route is sufficient. If it is absent and the operation requires MATLAB v7.3 support, resolve `mne[hdf5]==1.12.1` only in an authorized isolated environment using the site's approved manager; for a pip-managed lane, invoke `python -m pip`, never bare `pip`. In MNE 1.12.1 this extra supplies `h5io` and `pymatreader`, with `h5py` supplied transitively; the project exercise resolved h5io 0.2.5, h5py 3.16.0, and pymatreader 1.2.3. Apply the [runtime compatibility matrix](runtime-compatibility.md) before changing an environment. [[S49]](evidence-register.md#s49) [[S58]](evidence-register.md#s58) [[S61]](evidence-register.md#s61)
 
 Use SciPy `whosmat`/`loadmat` only for MAT v4 through v7.2. SciPy explicitly does not implement the HDF5/v7.3 interface, so a v7.3 failure is a routing decision rather than evidence that MATLAB is required. [[S43]](evidence-register.md#s43) [[S49]](evidence-register.md#s49)
 

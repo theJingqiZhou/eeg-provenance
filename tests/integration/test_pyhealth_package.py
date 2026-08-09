@@ -63,6 +63,18 @@ def test_pyhealth_201_cache_and_source_write_contract_is_visible() -> None:
     assert "input_processors" in set_task_parameters
     assert "output_processors" in set_task_parameters
 
+    set_task_source = inspect.getsource(BaseDataset.set_task)
+    for fragment in (
+        "uuid.uuid5(uuid.NAMESPACE_DNS, task_params)",
+        "uuid.uuid5(uuid.NAMESPACE_DNS, proc_params)",
+        "input_processors=input_processors",
+        "output_processors=output_processors",
+        "builder.fit(dataset)",
+        'builder.save(str(samples_path / "schema.pkl"))',
+        "return SampleDataset(",
+    ):
+        assert fragment in set_task_source
+
     source = inspect.getsource(TUABDataset)
     assert "self.prepare_metadata()" in source
     assert "Path.home() / \".cache\" / \"pyhealth\" / \"tuab\"" in source

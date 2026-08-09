@@ -95,7 +95,7 @@ Do not treat either framework's preprocessing as neutral loading. Braindecode pr
 
 Do not instantiate PyHealth 2.0.1 TUAB/TUEV adapters against a protected archive for discovery: their version-pinned metadata preparation can attempt writes under the supplied root before using a user-cache fallback. For approved processing, work from a bounded derivative view or copy-on-write mount and declare all explicit and implicit cache locations. [[S23]](evidence-register.md#s23) [[S40]](evidence-register.md#s40) [[S53]](evidence-register.md#s53)
 
-Use [tool-recipes-braindecode-pyhealth.md](tool-recipes-braindecode-pyhealth.md) for environment isolation, forward tests, cache controls, split-sensitive processor fitting, and decoder-interface limits. [[S20]](evidence-register.md#s20) [[S52]](evidence-register.md#s52) [[S53]](evidence-register.md#s53)
+Use [operation-semantics.md](operation-semantics.md) before selecting a framework preprocessing, window, task, or cache primitive. Keep package-isolation and executable contract tests in the repository validation environment rather than the installable skill. [[S20]](evidence-register.md#s20) [[S52]](evidence-register.md#s52) [[S53]](evidence-register.md#s53)
 
 ## BCI Competition IV 2a
 

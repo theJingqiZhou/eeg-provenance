@@ -27,6 +27,13 @@ Treat a repository clone as metadata until content availability has been checked
 
 Run a small preflight in the same image, account, scheduler partition, and mounted-storage context as the real job. Do not begin a bulk retrieval until the required capabilities pass or an explicit fallback is selected. [[S50]](evidence-register.md#s50)
 
+For a pinned Python image, apply the
+[runtime compatibility matrix](runtime-compatibility.md) before changing the
+environment. A sufficient installed stack is preferable to an in-place
+upgrade; `uv` is optional, and a conflicting framework belongs in a separate
+site-approved module, Conda environment, container, or virtual environment.
+[[S58]](evidence-register.md#s58) [[S61]](evidence-register.md#s61)
+
 Record at least:
 
 - operating system, architecture, kernel, Python version, package environment or image digest, and accelerator visibility; software behavior and standalone binaries are platform-specific. [[S03]](evidence-register.md#s03) [[S50]](evidence-register.md#s50)

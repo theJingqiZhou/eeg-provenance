@@ -66,12 +66,12 @@ Keep the established format-inspection tools free of dataset assumptions. Datase
 
 ## Exercised compatibility boundaries
 
-The project validation environment pins Python 3.12 and modern SciPy for MNE/EEGDash. TorchEEG 1.1.3 declares SciPy at most 1.10.1, so keep it out of that environment and exercise it with an isolated Python 3.11 runtime. [[S27]](evidence-register.md#s27) [[S31]](evidence-register.md#s31) [[S44]](evidence-register.md#s44)
+The project validation environment pins Python 3.12 and modern SciPy for MNE/EEGDash. TorchEEG 1.1.3 declares SciPy at most 1.10.1, so keep it out of that environment and exercise it with an isolated Python 3.11 runtime created by the site's approved manager. Do not install or upgrade merely to answer a metadata question. [[S27]](evidence-register.md#s27) [[S31]](evidence-register.md#s31) [[S44]](evidence-register.md#s44) [[S58]](evidence-register.md#s58) [[S61]](evidence-register.md#s61)
 
 ```bash
-uv run --isolated --no-project --python 3.11 \
-  --with torcheeg==1.1.3 --with 'pandas<3' python -c \
-  "from torcheeg.datasets import SEEDDataset, BCICIV2aDataset; print(SEEDDataset, BCICIV2aDataset)"
+# Run only after the active isolated lane resolves TorchEEG 1.1.3,
+# SciPy 1.10.1, and pandas <3.
+python -c "from torcheeg.datasets import SEEDDataset, BCICIV2aDataset; print(SEEDDataset, BCICIV2aDataset)"
 ```
 
 The unconstrained 2026-08-08 exercise selected pandas 3 and failed while importing TorchEEG through its WFDB dependency; adding `pandas<3` yielded TorchEEG 1.1.3 with SciPy 1.10.1 and pandas 2.3.3. Record these as observed compatibility facts, not permanent upstream guarantees. [[S44]](evidence-register.md#s44)
