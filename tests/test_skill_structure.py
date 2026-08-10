@@ -191,6 +191,10 @@ def test_optional_framework_contracts_have_isolated_ci_lanes() -> None:
 
     project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert "pyhealth==2.0.1" in project["dependency-groups"]["pyhealth"]
-    assert project["tool"]["uv"]["sources"]["torch"] == {
-        "index": "pytorch-cpu"
-    }
+    braindecode = project["dependency-groups"]["braindecode"]
+    assert "torch==2.13.0" in braindecode
+    assert "torchaudio==2.11.0" in braindecode
+    for package in ("torch", "torchaudio", "torchvision"):
+        assert project["tool"]["uv"]["sources"][package] == {
+            "index": "pytorch-cpu"
+        }

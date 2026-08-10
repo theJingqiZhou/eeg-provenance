@@ -68,6 +68,15 @@ def test_braindecode_170_mne_window_and_decoder_contract() -> None:
     assert tuple(output.shape) == (1, 2)
 
 
+def test_braindecode_audio_dependency_is_cpu_compatible() -> None:
+    import torch
+    import torchaudio
+
+    assert metadata.version("torchaudio").split("+", 1)[0] == "2.11.0"
+    assert torch.version.cuda is None
+    assert torchaudio.__version__.split("+", 1)[0] == "2.11.0"
+
+
 def test_braindecode_170_fixed_window_remainder_and_target_contract() -> None:
     pytest.importorskip("braindecode")
     import mne
